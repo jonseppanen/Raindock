@@ -16,9 +16,11 @@ if(!FileExist(userDir))
 iniFile := userDir . "\raindock.ini"
 taskmax := 16
 themeLocation := IniRead(iniFile, "UserVariables", "ThemePath")
-dockHeight := 190
+taskWidth := IniRead(iniFile, "UserVariables", "Taskwidth")
+SendRainmeterCommand("[!SetVariable TaskWidth " . taskWidth . " raindock]")
+dockHeight := (taskWidth - 15) + 90
 dockY := (A_ScreenHeight - dockHeight)
-dockX := (A_ScreenWidth / 2 - 240)
+dockX := 0
 dockAnim := false
 dockMinMax := 0
 dockState := "visible"
@@ -189,6 +191,7 @@ SendTaskIconInfo(newID,oldID,taskNumber)
     {
         global tmp
         global themeLocation
+        global taskWidth
         
         TmpFileLocation := tmp . "\" . newID["exe"] . ".bmp"
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . newID["id"] . " 0`"]`"`"`" raindock]")
@@ -203,7 +206,7 @@ SendTaskIconInfo(newID,oldID,taskNumber)
             if(FileExist(themeLocation . newID["exe"] . ".png"))
             {
                 
-                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png | RenderSize #TaskWidth#,#TaskWidth#`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png | RenderSize " . (TaskWidth - 20) . "," . (TaskWidth - 20) . "`" raindock]")
                 SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"`" raindock]")
                 SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"`" raindock]")
             }
@@ -246,12 +249,11 @@ SendTaskIconInfo(newID,oldID,taskNumber)
                     else{
                         bgColor := "{Image:ColorBG}"
                         fgColor := "{Image:ColorFG}"
-                        SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . icoPath . " | Ignore 1 | RenderSize #TaskWidth#,#TaskWidth#`" raindock]")
+                        SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . icoPath . " | Ignore 1 | RenderSize " . TaskWidth . "," . TaskWidth . "`" raindock]")
                     }
                 }
-                
-                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Ellipse (#taskwidth# / 2),(#taskwidth# / 2),(#taskwidth# / 2)| Color " . bgColor . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Text " . Initials . " | Offset 50,50 | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Ellipse (" . (TaskWidth - 20) . " / 2),(" . (TaskWidth - 20) . " / 2),(" . (TaskWidth - 20) . " / 2)| Color " . bgColor . "`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Text " . Initials . " | Offset (" . (TaskWidth - 20) . " / 2),(" . (TaskWidth - 20) . " / 2) | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
                 
 
             }
@@ -261,6 +263,7 @@ SendTaskIconInfo(newID,oldID,taskNumber)
         SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
     }
 }
+
 
 ListTaskbarWindows()
 {
@@ -274,6 +277,7 @@ ListTaskbarWindows()
     Global dockMinMax
     Global oldDockMinMax := dockMinMax
     Global taskmax
+    Global taskwidth
     dockMinMax := 0
     MouseGetPos xpos, ypos 
 
@@ -286,6 +290,7 @@ ListTaskbarWindows()
       If (Height && !IsWindowCloaked(thisId) && !(WinGetExStyle("ahk_id " thisId) & 0x8000088))
       {
         If(minMax = 1){
+            ;MsgBox "ahk_id " thisId
             dockMinMax := 1
         }
         TaskCount := ++TaskCount
@@ -330,7 +335,7 @@ ListTaskbarWindows()
                     SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . " raindock]")
                 }
             }
-            MoveDock(Floor(((A_ScreenWidth - ((100 + 20) * TaskCount))/2)-(140)),dockX)
+            MoveDock(Floor((A_ScreenWidth - (Taskwidth * TaskCount)) / 2 ) - (Taskwidth * 2),dockX)
         }
 
         For TaskId in TaskArray
