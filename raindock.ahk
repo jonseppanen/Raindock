@@ -180,12 +180,9 @@ Send_WM_COPYDATA(ByRef StringToSend, ByRef TargetWindowClass)
 SendTaskLabelInfo(newLabel,oldLabel,taskNumber)
 {
     if(!oldLabel || oldLabel["title"] != newLabel["title"]){
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . "Label Text `"`"`"    " . newLabel["title"] . "`"`"`" raindock]")
-        SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . "Label raindock]")
-        SendRainmeterCommand("[!ShowMeter Task" . taskNumber . "Label raindock]")
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . "Exe Text `"`"`"" . newLabel["exe"] . "`"`"`" raindock]")
-        SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . "Exe raindock]")
-        SendRainmeterCommand("[!ShowMeter Task" . taskNumber . "Exe raindock]")
+        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . newLabel["title"] . "`" raindock][!SetOption iconExe Text `"" . newLabel["exe"] . "`" raindock][!MoveMeter ([#CURRENTSECTION#:X]+(#TaskWidth#/2)+#iconTaskXPadding#) 0 iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
+        SendRainmeterCommand("[!UpdateMeter iconTitle raindock]")
+        SendRainmeterCommand("[!UpdateMeter iconExe raindock]")
     }    
 }
 
@@ -351,8 +348,8 @@ ListTaskbarWindows()
                 Loop (taskmax - TaskCount)
                 {
                     SendRainmeterCommand("[!SetOption Task" .  (A_Index + TaskCount) . " ImageName `"`" raindock]")
-                    SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . "Label raindock]")
-                    SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . "Exe raindock]")
+                    ;SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . "Label raindock]")
+                    ;SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . "Exe raindock]")
                     SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . " raindock]")
                 }
             }
