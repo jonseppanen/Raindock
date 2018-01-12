@@ -17,8 +17,12 @@ iniFile := userDir . "\raindock.ini"
 taskmax := 16
 themeLocation := IniRead(iniFile, "UserVariables", "ThemePath")
 taskWidth := IniRead(iniFile, "UserVariables", "Taskwidth")
+iconTaskXPadding := IniRead(iniFile, "UserVariables", "iconTaskXPadding")
+iconTaskYPadding := IniRead(iniFile, "UserVariables", "iconTaskYPadding")
 SendRainmeterCommand("[!SetVariable TaskWidth " . taskWidth . " raindock]")
-dockHeight := (taskWidth - 15) + 90
+SendRainmeterCommand("[!SetVariable iconTaskXPadding " . iconTaskXPadding . " raindock]")
+SendRainmeterCommand("[!SetVariable iconTaskYPadding " . iconTaskYPadding . " raindock]")
+dockHeight := (taskWidth + (iconTaskYPadding * 2)) + 70
 dockY := (A_ScreenHeight - dockHeight)
 dockX := 0
 dockAnim := false
@@ -192,6 +196,8 @@ SendTaskIconInfo(newID,oldID,taskNumber)
         global tmp
         global themeLocation
         global taskWidth
+        global iconTaskXPadding
+        global iconTaskYPadding
         
         TmpFileLocation := tmp . "\" . newID["exe"] . ".bmp"
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . newID["id"] . " 0`"]`"`"`" raindock]")
@@ -206,7 +212,7 @@ SendTaskIconInfo(newID,oldID,taskNumber)
             if(FileExist(themeLocation . newID["exe"] . ".png"))
             {
                 
-                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png | RenderSize " . (TaskWidth - 20) . "," . (TaskWidth - 20) . "`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png | RenderSize " . (TaskWidth) . "," . (TaskWidth) . "`" raindock]")
                 SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"`" raindock]")
                 SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"`" raindock]")
             }
@@ -252,8 +258,8 @@ SendTaskIconInfo(newID,oldID,taskNumber)
                         SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . icoPath . " | Ignore 1 | RenderSize " . TaskWidth . "," . TaskWidth . "`" raindock]")
                     }
                 }
-                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Ellipse (" . (TaskWidth - 20) . " / 2),(" . (TaskWidth - 20) . " / 2),(" . (TaskWidth - 20) . " / 2)| Color " . bgColor . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Text " . Initials . " | Offset (" . (TaskWidth - 20) . " / 2),(" . (TaskWidth - 20) . " / 2) | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Ellipse (" . (TaskWidth) . " / 2),(" . (TaskWidth) . " / 2),(" . (TaskWidth) . " / 2)| Color " . bgColor . "`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Text " . Initials . " | Offset (" . (TaskWidth) . " / 2),(" . (TaskWidth) . " / 2) | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
                 
 
             }
@@ -278,6 +284,8 @@ ListTaskbarWindows()
     Global oldDockMinMax := dockMinMax
     Global taskmax
     Global taskwidth
+    Global iconTaskXPadding
+    Global iconTaskYPadding
     dockMinMax := 0
     MouseGetPos xpos, ypos 
 
@@ -335,7 +343,7 @@ ListTaskbarWindows()
                     SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . " raindock]")
                 }
             }
-            MoveDock(Floor((A_ScreenWidth - (Taskwidth * TaskCount)) / 2 ) - (Taskwidth * 2),dockX)
+            MoveDock(Floor((A_ScreenWidth - ((Taskwidth + (iconTaskXPadding * 2)) * TaskCount)) / 2 ) - ((Taskwidth + (iconTaskXPadding * 2)) * 2),dockX)
         }
 
         For TaskId in TaskArray
@@ -359,7 +367,7 @@ ListTaskbarWindows()
         }
     }
 
-    if(ypos = (A_ScreenHeight - 1))
+    if(ypos >= (A_ScreenHeight - 2))
     {
         dockShow()
     }
