@@ -306,8 +306,14 @@ ListTaskbarWindows()
       }
     }
     TaskList := Sort(TaskList, "N D,")
+    activeTask := false
     Loop Parse, TaskList, "," 
     {
+        if WinActive("ahk_id " A_LoopField)
+        {
+            activeTask := true
+            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . A_Index . ":X] `" raindock]")
+        }
         ClassName := WinGetClass("ahk_id " A_LoopField)
         Titlevar := WinGetTitle("ahk_id " A_LoopField)
         SplitPath WinGetProcessPath("ahk_id " A_LoopField) ,, Path,, OutNameNoExt
@@ -326,6 +332,13 @@ ListTaskbarWindows()
         TaskArray[A_Index,"title"] := Titlevar
         TaskArray[A_Index,"exe"] := ExeName
         TaskArray[A_Index,"path"] := Path
+    }
+
+    if(activeTask){
+        SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
+    }
+    else{
+        SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
     }
 
     if(TaskArray != OldTaskArray)
