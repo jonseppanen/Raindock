@@ -29,6 +29,7 @@ dockAnim := false
 dockMinMax := 0
 dockState := "visible"
 AccentColor := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
+LastAlbum := ""
 
 SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " raindock]")
 SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
@@ -173,28 +174,42 @@ Send_WM_COPYDATA(ByRef StringToSend, ByRef TargetWindowClass)
     return ErrorLevel  
 }
 
+renderIconCircle(incrementer){
+    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer) . " `"Ellipse 150,150,146 | canvas 300,300 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer+1) . " `"Combine Image" . (incrementer-1) . " | CopyAlpha Image" . (incrementer) . "`" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer+2) . " `"Ellipse 150,150,146 | canvas 300,300 | StrokeWidth 4 | StrokeColor 172,172,172,50 | Color 0,0,0,0 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer+3) . " `"Ellipse 150,150,148 | canvas 300,300 | StrokeWidth 2 | StrokeColor 50,50,50,255 | Color 0,0,0,0 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image7 `"Ellipse 1,1,1 | ignore 1 `" raindock]")
+}
+
 SendTaskLabelInfo(newLabel,oldLabel,taskNumber)
 {
     if(!oldLabel || oldLabel["title"] != newLabel["title"])
     {
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . newLabel["title"] . "`" raindock][!SetOption iconExe Text `"" . newLabel["exe"] . "`" raindock][!MoveMeter ([#CURRENTSECTION#:X]+(#TaskWidth#/2)+#iconTaskXPadding#) 0 iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
-        if(newLabel["exe"] = "Spotify" && newLabel["title"] != "Spotify")
+    }    
+    if( newLabel["exe"] = "Spotify" && newLabel["title"] != "Spotify")
+    {
+        coverFile := EnvGet("TMP") . "\cover.bmp"
+        if(FileExist(coverFile))
         {
-            wwdircover := EnvGet("USERPROFILE")
-            if(FileExist(wwdircover . "\wwing\cover.png"))
-            {
-                Global tmp
-                Global TaskWidth
-                SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . wwdircover . "\wwing\coversml.bmp`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . wwdircover . "\wwing\cover.png | RenderSize " . TaskWidth . "," . TaskWidth . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"File " . tmp . "\mask.bmp | RenderSize " . TaskWidth . "," . TaskWidth . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Combine Image | CopyAlpha Image2`" raindock]")
-                SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]")    
-                SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . wwdircover  . "\wwing\coversml.bmp" "`" raindock]")
+            global LastAlbum
+            currentAlbum := FileGetTime(coverFile, C)
+            if(LastAlbum = currentAlbum){
+                return
+            }
+            else{
+                LastAlbum := currentAlbum
+                coverOut := EnvGet("TMP") . "\smallcover.bmp"
+                SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . coverOut . "`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . coverFile . "| RenderSize #TaskWidth#,#TaskWidth#`" raindock]")
+                renderIconCircle(2)
+                SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]") 
+                SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . coverOut . "`" raindock]")
                 SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
             }
         }
-    }    
+    }
 }
 
 SendTaskIconInfo(newID,oldID,taskNumber)
@@ -219,11 +234,8 @@ SendTaskIconInfo(newID,oldID,taskNumber)
             SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . TmpFileLocation . "`" raindock]")
             if(FileExist(themeLocation . newID["exe"] . ".png"))
             {    
-                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png | RenderSize " . (TaskWidth) . "," . (TaskWidth) . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image5 `"`" raindock]")
+                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png" . "| RenderSize #TaskWidth#,#TaskWidth#`" raindock]")
+                renderIconCircle(2)          
             }
             else
             {
@@ -258,6 +270,7 @@ SendTaskIconInfo(newID,oldID,taskNumber)
                         Sleep 30
                         Counter++
                     }
+
                     if(Counter > 199){
                         SendRainmeterCommand("[!SetOption magickmeter1 Image `"Ellipse 1,1,1| Ignore 1 `" raindock]")
                     }
@@ -268,9 +281,9 @@ SendTaskIconInfo(newID,oldID,taskNumber)
                     }
                 }
                 SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Rectangle 0,0,#TaskWidth#,#TaskWidth# | Color " . bgColor . " `" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"File " . tmp . "\mask.bmp | RenderSize " . TaskWidth . "," . TaskWidth . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Combine Image2 | CopyAlpha Image3`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image5 `"Text " . Initials . " | Offset (" . (TaskWidth) . " / 2),(" . (TaskWidth) . " / 2) | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
+                renderIconCircle(3)
+                SendRainmeterCommand("[!SetOption magickmeter1 Image7 `"Text " . Initials . " | Offset (" . (TaskWidth) . " / 2),(" . (TaskWidth) . " / 2) | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
+                
             }
             SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]")       
         }
