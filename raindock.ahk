@@ -5,7 +5,8 @@ CoordMode "Mouse", "Screen"
 
 ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 TaskArray := {}
-SetTimer "ListTaskbarWindows", 200
+SetTimer "ListTaskbarWindows", 300
+SetTimer "dockStateHandler", 300
 tmp := EnvGet("TMP") . "\raindock"
 userDir := EnvGet("USERPROFILE") . "\raindock"
 if(!FileExist(userDir))
@@ -86,8 +87,9 @@ dockShow()
 {
     global dockAnim
     global dockState
+    global dockMinMax
     
-    if(dockAnim = true || dockState = "visible"){
+    if(dockAnim = true || dockState = "visible" || dockMinMax = 2){
         return
     }
     dockState := "visible"
@@ -318,15 +320,11 @@ ListTaskbarWindows()
     TaskCount := 0
     global dockY
     global dockX
-    Global dockMinMax
-    Global oldDockMinMax := dockMinMax
     Global taskmax
     Global taskwidth
     Global iconTaskXPadding
     Global iconTaskYPadding
     Global ActiveHwnd
-    dockMinMax := 0
-    MouseGetPos xpos, ypos 
 
     id := WinGetList(,, "NxDock|Program Manager|Task Switching|^$")
     Loop id.Length()
@@ -403,12 +401,33 @@ ListTaskbarWindows()
             }
         }
     }
+}
 
-    dockMinMax := WinGetMinMax(A)
+dockStateHandler()
+{
+    Global dockMinMax
+    Global oldDockMinMax := dockMinMax
+    Global TaskWidth
+    Global iconTaskYPadding
+    MouseGetPos xpos, ypos 
+    WinGetPos(,,CurrentWinWidth, CurrentWinHeight,"A")
 
+    if(CurrentWinWidth = A_ScreenWidth && CurrentWinHeight = A_ScreenHeight)
+    {
+        dockMinMax := 2
+    }
+    else if(WinGetMinMax("A"))
+    {
+        dockMinMax := 1
+    }
+    else
+    {
+        dockMinMax := 0
+    }
+    ;MsgBox dockMinMax
     if(oldDockMinMax != dockMinMax)
     {
-        if(dockMinMax != 1){
+        if(dockMinMax < 1){
             dockShow()
             return
         }
@@ -417,7 +436,7 @@ ListTaskbarWindows()
         }
     }
 
-    if(dockMinMax)
+    if(dockMinMax = 1)
     {
         if(ypos >= (A_ScreenHeight - 2))
         {
@@ -427,9 +446,6 @@ ListTaskbarWindows()
             dockHide()
         }
     }
-
-    
 }
-
 
 
