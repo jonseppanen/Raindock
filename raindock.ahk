@@ -174,12 +174,43 @@ Send_WM_COPYDATA(ByRef StringToSend, ByRef TargetWindowClass)
     return ErrorLevel  
 }
 
-renderIconCircle(incrementer){
-    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer) . " `"Ellipse 150,150,146 | canvas 300,300 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer+1) . " `"Combine Image" . (incrementer-1) . " | CopyAlpha Image" . (incrementer) . "`" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer+2) . " `"Ellipse 150,150,146 | canvas 300,300 | StrokeWidth 4 | StrokeColor 172,172,172,50 | Color 0,0,0,0 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image" . (incrementer+3) . " `"Ellipse 150,150,148 | canvas 300,300 | StrokeWidth 2 | StrokeColor 50,50,50,255 | Color 0,0,0,0 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image7 `"Ellipse 1,1,1 | ignore 1 `" raindock]")
+renderIconTheme(iconFile,renderTo,string := ""){
+
+    if(string){
+        Global AccentColor
+        MM1 := "Text " . string . " | Offset (#Taskwidth# / 2),(#Taskwidth# / 2) | ignore 1  | Color " . iconFile . " | Face Segoe UI | Weight 700 | Align CenterCenter"
+        MM2 := AccentColor
+        ;MM3 := "Text " . string . " | Offset (#Taskwidth# / 2),(#Taskwidth# / 2) | Color " . iconFile . " | Face Segoe UI | Weight 700 | Align CenterCenter"
+    }
+    else{
+        MM1 := "File " . iconFile . " | ignore 1 | RenderSize #TaskWidth#,#TaskWidth#"
+        MM2 := "{Image:ColorBG}"
+        ;MM3 := "Clone Image"
+    }
+
+    SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . renderTo . "`" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image `" " . MM1 . " `" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Rectangle 0,0,#TaskWidth#,#TaskWidth#  | Color " . MM2 . "  `" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Clone Image`" raindock]")
+
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Ellipse 128,128,124 | canvas 256,256 | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Combine Image | CopyAlpha Image2`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image5 `"Combine Image2 | CopyAlpha Image`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Combine Image | Copy Image2`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Rectangle 0,0,#TaskWidth#,#TaskWidth#  | Color {Image2:ColorBG}  `" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Ellipse 150,150,146 | canvas 300,300 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image5 `"Combine Image3 | CopyAlpha Image4`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Ellipse 150,150,146 | canvas 300,300 | StrokeWidth 4 | StrokeColor 172,172,172,50 | Color 0,0,0,0 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Ellipse 150,150,148 | canvas 300,300 | StrokeWidth 2 | StrokeColor 50,50,50,255 | Color 0,0,0,0 | StrokeAlign Inside | resize #TaskWidth#,#TaskWidth#`" raindock]")
+    
+    ;SendRainmeterCommand("[!SetOption magickmeter1 Image7 `"Text " . string . " | Offset (#Taskwidth# / 2),(#Taskwidth# / 2) | Color " . stringColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")    
+    SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]") 
+    Counter := 1
+    
+    While(!FileExist( renderTo ) && Counter < 200){
+        Sleep 30
+        Counter++
+    }
 }
 
 SendTaskLabelInfo(newLabel,oldLabel,taskNumber)
@@ -201,10 +232,7 @@ SendTaskLabelInfo(newLabel,oldLabel,taskNumber)
             else{
                 LastAlbum := currentAlbum
                 coverOut := EnvGet("TMP") . "\smallcover.bmp"
-                SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . coverOut . "`" raindock]")
-                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . coverFile . "| RenderSize #TaskWidth#,#TaskWidth#`" raindock]")
-                renderIconCircle(2)
-                SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]") 
+                renderIconTheme(coverFile,coverOut) 
                 SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . coverOut . "`" raindock]")
                 SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
             }
@@ -231,16 +259,15 @@ SendTaskIconInfo(newID,oldID,taskNumber)
 
         if(!FileExist(TmpFileLocation))
         {
-            SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . TmpFileLocation . "`" raindock]")
             if(FileExist(themeLocation . newID["exe"] . ".png"))
             {    
-                SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . themeLocation . newID["exe"] . ".png" . "| RenderSize #TaskWidth#,#TaskWidth#`" raindock]")
-                renderIconCircle(2)          
+                renderIconTheme(themeLocation . newID["exe"] . ".png",TmpFileLocation)          
             }
             else
             {
                 global tmp
                 icoPath :=  tmp . "\" . newID["exe"] . ".ico"
+                icoFile := newID["path"]
                 Initials := newID["exe"]
                 Loop Parse, Initials, A_Space
                 {
@@ -249,20 +276,17 @@ SendTaskIconInfo(newID,oldID,taskNumber)
                     Initials := x
                 }
                 Initials := StrReplace(Initials, "[", "")
-                global AccentColor
-                bgColor := AccentColor
-                fgColor := "255,255,255,255"
 
                 if(newID["classname"] = "ApplicationFrameWindow")
                 {
-                    SendRainmeterCommand("[!SetOption magickmeter1 Image `"Ellipse 1,1,1| Ignore 1 `" raindock]")
+                    
+                    renderIconTheme("255,255,255,255",TmpFileLocation,Initials)
                 }
-                else
-                {
+                else{
                     Counter := 1
                     SendRainmeterCommand("[!EnableMeasure MeasureIconExe raindock]")
                     SendRainmeterCommand("[!SetOption MeasureIconExe IconPath `"" .  icoPath   . "`" raindock]")
-                    SendRainmeterCommand("[!SetOption MeasureIconExe Path `"" . newID["path"] .  "`" raindock]")
+                    SendRainmeterCommand("[!SetOption MeasureIconExe Path `"" . icoFile .  "`" raindock]")
                     SendRainmeterCommand("[!SetOption MeasureIconExe WildcardSearch `"" . newID["exe"] .  ".exe`" raindock]")
                     SendRainmeterCommand("[!UpdateMeasure MeasureIconExe raindock]")
                     SendRainmeterCommand("[!CommandMeasure MeasureIconExe `"Update`" raindock]")
@@ -272,20 +296,13 @@ SendTaskIconInfo(newID,oldID,taskNumber)
                     }
 
                     if(Counter > 199){
-                        SendRainmeterCommand("[!SetOption magickmeter1 Image `"Ellipse 1,1,1| Ignore 1 `" raindock]")
+                        renderIconTheme("255,255,255,255",TmpFileLocation,Initials)
                     }
                     else{
-                        bgColor := "{Image:ColorBG}"
-                        fgColor := "{Image:ColorFG}"
-                        SendRainmeterCommand("[!SetOption magickmeter1 Image `"File " . icoPath . " | Ignore 1 | RenderSize " . TaskWidth . "," . TaskWidth . "`" raindock]")
+                        renderIconTheme(icoPath,TmpFileLocation)
                     }
                 }
-                SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Rectangle 0,0,#TaskWidth#,#TaskWidth# | Color " . bgColor . " `" raindock]")
-                renderIconCircle(3)
-                SendRainmeterCommand("[!SetOption magickmeter1 Image7 `"Text " . Initials . " | Offset (" . (TaskWidth) . " / 2),(" . (TaskWidth) . " / 2) | Color " . fgColor . " | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
-                
             }
-            SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]")       
         }
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . TmpFileLocation . "`" raindock]")
         SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
@@ -316,18 +333,15 @@ ListTaskbarWindows()
     {
       thisId := id[A_Index]
       WinGetPos(,,, Height,"ahk_id " thisId)
-      minMax := WinGetMinMax("ahk_id " thisId)
+      ClassName := WinGetClass("ahk_id " thisId)
       If (Height && !IsWindowCloaked(thisId) && !(WinGetExStyle("ahk_id " thisId) & 0x8000088))
       {
-        If(minMax = 1){
-            ;MsgBox "ahk_id " thisId
-            dockMinMax := 1
-        }
         TaskCount := ++TaskCount
-        TaskList := Tasklist . thisId . ","
+        TaskList := Tasklist . "{{{" . ClassName . "}}}" . thisId . ","
       }
     }
-    TaskList := Sort(TaskList, "N D,")
+    TaskList := Sort(TaskList, "D,")
+    TaskList := RegExReplace(TaskList, "{{{.*?}}}")
     activeTask := false
     ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
     Loop Parse, TaskList, "," 
@@ -339,6 +353,7 @@ ListTaskbarWindows()
         }
         ClassName := WinGetClass("ahk_id " A_LoopField)
         Titlevar := WinGetTitle("ahk_id " A_LoopField)
+        
         SplitPath WinGetProcessPath("ahk_id " A_LoopField) ,, Path,, OutNameNoExt
 
         if(ClassName != "ApplicationFrameWindow"){
@@ -389,6 +404,8 @@ ListTaskbarWindows()
         }
     }
 
+    dockMinMax := WinGetMinMax(A)
+
     if(oldDockMinMax != dockMinMax)
     {
         if(dockMinMax != 1){
@@ -400,10 +417,18 @@ ListTaskbarWindows()
         }
     }
 
-    if(ypos >= (A_ScreenHeight - 2))
+    if(dockMinMax)
     {
-        dockShow()
+        if(ypos >= (A_ScreenHeight - 2))
+        {
+            dockShow()
+        }
+        else if(ypos <= (A_ScreenHeight - (TaskWidth + (iconTaskYPadding * 2)))){
+            dockHide()
+        }
     }
+
+    
 }
 
 
