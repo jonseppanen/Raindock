@@ -232,7 +232,7 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
        
         Global spotifyActive
 
-        if(!oldTask || oldTask["id"] != currentTask["id"] || (currentTask["exe"] = "Spotify" && currentTask["title"] != "Spotify" && spotifyActive))
+        if(!oldTask || oldTask["id"] != currentTask["id"] || (currentTask["exe"] = "Spotify"  && spotifyActive))
         {
             Global tmp
             Global themeLocation
@@ -248,13 +248,15 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
             SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
             SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
 
-            if(currentTask["exe"] = "Spotify")
+            if(currentTask["exe"] = "Spotify" && currentTask["title"] != "Spotify")
             {
+                
                 Global coverOut
                 TmpFileLocation := coverOut 
             }
             else if(!FileExist(TmpFileLocation))
             {
+                
                 if(FileExist(themeLocation . currentTask["exe"] . ".png"))
                 {    
                     renderIconTheme(themeLocation . currentTask["exe"] . ".png",TmpFileLocation)          
@@ -300,7 +302,6 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
                     }
                 }
             }
-
             SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . TmpFileLocation . "`" raindock]")
             SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
         }
@@ -327,13 +328,15 @@ ListTaskbarWindows()
     {
       thisId := id[A_Index]
       WinGetPos(,,, Height,"ahk_id " thisId)
-      ClassName := WinGetClass("ahk_id " thisId)
+      ;ClassName := WinGetClass("ahk_id " thisId)
+      SplitPath WinGetProcessPath("ahk_id " thisId) ,, Path,, SortName
       If (Height && !IsWindowCloaked(thisId) && !(WinGetExStyle("ahk_id " thisId) & 0x8000088))
       {
         TaskCount := ++TaskCount
-        TaskList := Tasklist . "{{{" . ClassName . "}}}" . thisId . ","
+        TaskList := Tasklist . "{{{" . SortName . "}}}" . thisId . ","
       }
     }
+    
     TaskList := Sort(TaskList, "D,")
     TaskList := RegExReplace(TaskList, "{{{.*?}}}")
     activeTask := false
@@ -419,7 +422,6 @@ dockStateHandler()
     {
         dockMinMax := 0
     }
-    ;MsgBox dockMinMax
     if(oldDockMinMax != dockMinMax)
     {
         if(dockMinMax < 1){
