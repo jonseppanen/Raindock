@@ -8,8 +8,8 @@ It uses **autohotkey v2** as the logical backend and task scraper, and **rainmet
 
 ## Requirements
 
-* Autohotkey V2
 * [MagickMeter](https://github.com/khanhas/MagickMeter) plugin by @khanhas. Make sure that is installed properly and restart rainmeter.
+* I advise using my other theme [WWing](https://github.com/jonseppanen/wwing) with this theme, as it goes nicely together.
 
 ## Features
 
