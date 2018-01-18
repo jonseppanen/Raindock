@@ -30,7 +30,7 @@ if(!FileExist(dirThemeTemp))
 }
 
 iconTheme := []
-iconTheme["location"] := IniRead(iniFile, "Variables", "ThemePath")
+iconTheme["location"] := StrReplace(IniRead(iniFile, "Variables", "ThemePath"), "#@#", A_WorkingDir)
 iconTheme["w"] := IniRead(iniFile, "Variables", "Taskwidth")
 iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconTaskXPadding")
 iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconTaskYPadding")
