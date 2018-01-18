@@ -164,7 +164,9 @@ IsWindowCloaked(hwnd)
 
 SendRainmeterCommand(command)
 {
-    Send_WM_COPYDATA(command, "ahk_class RainmeterMeterWindow")
+    if(Send_WM_COPYDATA(command, "ahk_class RainmeterMeterWindow") = 1){
+        ExitApp
+    }
 }
 
 Send_WM_COPYDATA(ByRef StringToSend, ByRef TargetWindowClass)  
