@@ -20,7 +20,7 @@ if(FileExist(dirTemp . "\cover.bmp"))
 if(!FileExist(dirUser))
 {
     DirCreate dirUser
-    FileCopy A_WorkingDir . "\default.ini", dirUser . "\raindock.ini"
+    FileCopy A_WorkingDir . "\@Resources\default.ini", dirUser . "\raindock.ini"
     SendRainmeterCommand("[!Refresh raindock]")
 }
 if(!FileExist(dirThemeTemp))
@@ -51,8 +51,7 @@ ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " raindock]")
 SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
 
-OnMessage(16666, "Switch")
-OnMessage(16667, "dockHide")
+OnMessage(16666, "taskSwitch")
 OnMessage(16668, "clearIconCache")
 OnMessage(16669, "selectIconTheme")
 
@@ -137,7 +136,7 @@ MoveDock(MoveX,oldPos)
 
 }
 
-Switch(wParam, lParam)
+taskSwitch(wParam, lParam)
 { 
     Global ActiveHwnd
     IDVar := WinGetID("ahk_id " wParam)
