@@ -2,6 +2,7 @@ SetTitleMatchMode "RegEx"
 #Persistent
 #SingleInstance force
 CoordMode "Mouse", "Screen"
+TraySetIcon(A_WorkingDir . "\raindock.ico")
 
 dirTemp := EnvGet("TMP")
 dirThemeTemp := dirTemp . "\raindock"
@@ -240,13 +241,12 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
             SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
             SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
 
-            if(spotifyWidget["active"] && currentTask["exe"] = "Spotify" && currentTask["title"] != "Spotify")
+            if(currentTask["exe"] = "Spotify" && spotifyWidget["active"] && currentTask["title"] != "Spotify")
             {
                 renderedIcon := spotifyWidget["renderedCover"] 
             }
             else if(!FileExist(renderedIcon))
             {
-                
                 if(FileExist(iconTheme["location"] . currentTask["exe"] . ".png"))
                 {    
                     renderIconTheme(iconTheme["location"] . currentTask["exe"] . ".png",renderedIcon)          
