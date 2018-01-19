@@ -8,9 +8,10 @@ dirThemeTemp := dirTemp . "\raindock"
 dirUser := EnvGet("USERPROFILE") . "\raindock"
 iniFile := dirUser . "\raindock.ini"
 
+spotifyWidget := []
+spotifyWidget["active"] := False
 if(FileExist(dirTemp . "\cover.bmp"))
 {
-    spotifyWidget := []
     spotifyWidget["active"] := True
     spotifyWidget["sourceCover"] := dirTemp . "\cover.bmp"
     spotifyWidget["lastAlbum"] := ""
@@ -239,7 +240,7 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
             SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
             SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
 
-            if(currentTask["exe"] = "Spotify" && currentTask["title"] != "Spotify")
+            if(spotifyWidget["active"] && currentTask["exe"] = "Spotify" && currentTask["title"] != "Spotify")
             {
                 renderedIcon := spotifyWidget["renderedCover"] 
             }
