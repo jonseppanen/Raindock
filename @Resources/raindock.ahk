@@ -424,6 +424,10 @@ ListTaskbarWindows()
     Loop id.Length()
     {
         thisId := id[A_Index]
+        if (WinGetExStyle("ahk_id " thisId) & 0x8000088)
+        {
+            continue
+        }
         WinGetPos(,,, Height,"ahk_id " thisId)
         SplitPath WinGetProcessPath("ahk_id " thisId) ,, Path,, SortName
         if(InStr(TaskList, "{{{111" . SortName . "}}}"))
@@ -437,7 +441,7 @@ ListTaskbarWindows()
             SortName := "111" . SortName
         }
 
-        If (Height && !IsWindowCloaked(thisId) && !(WinGetExStyle("ahk_id " thisId) & 0x8000088))
+        If (Height && !IsWindowCloaked(thisId))
         {
             TaskList := Tasklist . "{{{" . SortName . "}}}" . thisId . ","
         }
