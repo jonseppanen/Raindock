@@ -7,6 +7,7 @@ TraySetIcon(A_WorkingDir . "\raindock.ico")
 dirTemp := EnvGet("TMP")
 dirThemeTemp := dirTemp . "\raindock"
 dirUser := EnvGet("USERPROFILE") . "\raindock"
+dirPinnedItems := EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 iniFile := dirUser . "\raindock.ini"
 
 spotifyWidget := []
@@ -39,15 +40,15 @@ iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconTaskYPadding")
 iconTheme["accentColor"] := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
 
 dockConfig := []
-dockConfig["h"] := (iconTheme["w"] + (iconTheme["paddingY"] * 2)) + 70
+dockConfig["h"] := (iconTheme["w"] + (iconTheme["paddingY"] * 2)) + 95
 dockConfig["x"] := 0
 dockConfig["y"] := (A_ScreenHeight - dockConfig["h"])
 dockConfig["animating"] := false
 dockConfig["minMax"] := 0
 dockConfig["visible"] := true
 
+arrayPinnedItems := []
 TaskArray := {}
-taskmax := 16
 ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 
 SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " raindock]")
@@ -57,6 +58,8 @@ OnMessage(16666, "taskSwitch")
 OnMessage(16668, "clearIconCache")
 OnMessage(16669, "selectIconTheme")
 
+enumeratedPinnedItems
+SetTimer "enumeratedPinnedItems", 3000
 SetTimer "ListTaskbarWindows", 300
 SetTimer "dockStateHandler", 300
 
@@ -138,6 +141,67 @@ MoveDock(MoveX,oldPos)
 
 }
 
+dockStateHandler()
+{
+    Global dockConfig
+    Global iconTheme
+    Global oldDockMinMax := dockConfig["minMax"]
+    MouseGetPos xpos, ypos 
+    WinGetPos(,,CurrentWinWidth, CurrentWinHeight,"A")
+
+    if(CurrentWinWidth = A_ScreenWidth && CurrentWinHeight = A_ScreenHeight)
+    {
+        dockConfig["minMax"] := 2
+    }
+    else if(WinGetMinMax("A"))
+    {
+        dockConfig["minMax"] := 1
+    }
+    else
+    {
+        dockConfig["minMax"] := 0
+    }
+    if(oldDockMinMax != dockConfig["minMax"])
+    {
+        if(dockConfig["minMax"] < 1){
+            dockShow()
+            return
+        }
+        else{
+            dockHide()
+        }
+    }
+
+    if(dockConfig["minMax"] = 1)
+    {
+        if(ypos >= (A_ScreenHeight - 2))
+        {
+            dockShow()
+        }
+        else if(ypos <= (A_ScreenHeight - (iconTheme["w"] + (iconTheme["paddingY"] * 2) + 10))){
+            dockHide()
+        }
+    }
+}
+
+getArraysIdentical(firstArray,SecondArray)
+{
+    if(firstArray.length() != SecondArray.length())
+    {
+        return false
+    }
+
+    For arrKey in firstArray
+    {
+        if(firstArray[arrKey] != SecondArray[arrKey])
+        {
+            return false
+        }
+    }
+
+    return true
+}
+
 taskSwitch(wParam, lParam)
 { 
     Global ActiveHwnd
@@ -182,36 +246,43 @@ Send_WM_COPYDATA(ByRef StringToSend, ByRef TargetWindowClass)
     return ErrorLevel  
 }
 
-
 RenderSpotifyIcon()
 {
     Global spotifyWidget
+    Global iconTheme
     currentAlbum := FileGetTime(spotifyWidget["sourceCover"], C)
 
     if(spotifyWidget["lastAlbum"] != currentAlbum )
     {
         spotifyWidget["lastAlbum"] := currentAlbum
-        renderIconTheme(spotifyWidget["sourceCover"],spotifyWidget["renderedCover"]) 
+        SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . spotifyWidget["renderedCover"] . "`" raindock]")
+        SendRainmeterCommand("[!SetOption magickmeter1 Image `"Rectangle 0,0,(#TaskWidth# + (#iconTaskXPadding# * 2)),(#TaskWidth# + (#iconTaskYPadding# * 2) + 10)  | Color 255,255,255,1  `" raindock]")
+        SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"File " . spotifyWidget["sourceCover"] . " | RenderSize #TaskWidth#,(#TaskWidth#) | Move #iconTaskXPadding#,#iconTaskYPadding# | Perspective *,*,(#TaskWidth# - 10),15,(#TaskWidth# - 10),(#TaskWidth# - 20),*,*`" raindock]")
+        SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"File " . iconTheme["location"] . "spotify.png | RenderSize (#TaskWidth#/2),(#TaskWidth#/2) | move ((#TaskWidth#/2) + #iconTaskXPadding#) ,((#TaskWidth#/2) + #iconTaskYPadding#)`" raindock]")
+        SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Rectangle #iconTaskXPadding#,(#TaskWidth# + (#iconTaskYPadding# * 2) + 8),#TaskWidth#,2  | ignore 0| Color 200,200,200,170`" raindock]")
+        SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]") 
+
     }
 }
 
-
-renderIconTheme(iconFile,renderTo,string := ""){
-
-    if(string){
-        Global iconTheme
-        MM1 := "Text " . string . " | Offset (#Taskwidth# / 2),(#Taskwidth# / 2) | ignore 1  | Color " . iconFile . " | Face Segoe UI | Weight 700 | Align CenterCenter"
-        MM2 := iconTheme["accentColor"]
-    }
-    else{
-        MM1 := "File " . iconFile . " | ignore 1 | RenderSize #TaskWidth#,#TaskWidth#"
-        MM2 := "{Image:ColorBG}"
-    }
+renderIconTheme(iconFile,renderTo,pinnedTask := 0,string := ""){
 
     SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . renderTo . "`" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image `" " . MM1 . " `" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Rectangle 0,0,#TaskWidth#,#TaskWidth#  | Color " . MM2 . "  `" raindock]")
-    SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Clone Image`" raindock]")
+    SendRainmeterCommand("[!SetOption magickmeter1 Image `"Rectangle 0,0,(#TaskWidth# + (#iconTaskXPadding# * 2)),(#TaskWidth# + (#iconTaskYPadding# * 2) + 10)  | Color 255,255,255,1  `" raindock]")
+
+    if(!string)
+    {
+        SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"File " . iconFile . " | RenderSize #TaskWidth#,#TaskWidth# | move #iconTaskXPadding#,#iconTaskYPadding#`" raindock]")
+        SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Rectangle 0,0,(#TaskWidth# + (#iconTaskXPadding# * 2)),(#TaskWidth# + (#iconTaskYPadding# * 2) + 10)  | Ignore 1 | Color 255,255,255,1  `" raindock]")
+    }
+    else
+    {                           
+        Global iconTheme
+        SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"Ellipse ((#TaskWidth# + (#iconTaskXPadding# * 2)) / 2),((#TaskWidth# + (#iconTaskYPadding# * 2)) / 2),(#TaskWidth# / 2) | Color " . iconTheme["accentColor"] . "`" raindock]")
+        SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"Text " . string . " | Offset ((#TaskWidth# + (#iconTaskXPadding# * 2)) / 2),((#TaskWidth# + (#iconTaskYPadding# * 2)) / 2)  | Color 255,255,255 | Face Segoe UI | Weight 700 | Align CenterCenter`" raindock]")
+    }
+
+    SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Rectangle #iconTaskXPadding#,(#TaskWidth# + (#iconTaskYPadding# * 2) + 8),#TaskWidth#,2  | ignore " . pinnedTask . "| Color 200,200,200,170`" raindock]")
     SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]") 
     Counter := 1
     
@@ -223,33 +294,44 @@ renderIconTheme(iconFile,renderTo,string := ""){
 
 SendTaskIconInfo(currentTask,oldTask,taskNumber)
 {
-    if(!oldTask || oldTask["title"] != currentTask["title"])
+    if(!oldTask || oldTask["title"] != currentTask["title"] || oldTask["id"] != currentTask["id"])
     {
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" raindock][!SetOption iconExe Text `"" . currentTask["exe"] . "`" raindock][!MoveMeter ([#CURRENTSECTION#:X]+(#TaskWidth#/2)+#iconTaskXPadding#) 0 iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
-       
         Global spotifyWidget
 
         if(!oldTask || oldTask["id"] != currentTask["id"] || (currentTask["exe"] = "Spotify"  && spotifyWidget["active"]))
         {
             Global dirThemeTemp
             Global iconTheme            
-            renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . ".bmp"
             
-            SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . currentTask["id"] . " 0`"]`"`"`" raindock]")
-            SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["path"] . "\" . currentTask["exe"] . ".exe" . "]`"`"`" raindock]")
-            SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"0.png`" raindock]")
-            SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
+            pinnedTask := 0
+
+            if (currentTask["id"] is "digit") 
+            {
+                renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . ".bmp"
+                SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . currentTask["id"] . " 0`"]`"`"`" raindock]")
+                SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+            }
+            else
+            {
+                renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . "_pin.bmp"
+                pinnedTask := 1
+                SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+                SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+            }
+            
             SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
 
             if(currentTask["exe"] = "Spotify" && spotifyWidget["active"] && currentTask["title"] != "Spotify")
             {
+                
                 renderedIcon := spotifyWidget["renderedCover"] 
             }
             else if(!FileExist(renderedIcon))
             {
                 if(FileExist(iconTheme["location"] . currentTask["exe"] . ".png"))
                 {    
-                    renderIconTheme(iconTheme["location"] . currentTask["exe"] . ".png",renderedIcon)          
+                    renderIconTheme(iconTheme["location"] . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
                 }
                 else
                 {
@@ -267,14 +349,14 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
                     if(currentTask["classname"] = "ApplicationFrameWindow")
                     {
                         
-                        renderIconTheme("255,255,255,255",renderedIcon,Initials)
+                        renderIconTheme("255,255,255,255",renderedIcon,pinnedTask,Initials)
                     }
                     else{
                         Counter := 1
                         SendRainmeterCommand("[!EnableMeasure MeasureIconExe raindock]")
                         SendRainmeterCommand("[!SetOption MeasureIconExe IconPath `"" .  iconExtracted   . "`" raindock]")
                         SendRainmeterCommand("[!SetOption MeasureIconExe Path `"" . extractExe .  "`" raindock]")
-                        SendRainmeterCommand("[!SetOption MeasureIconExe WildcardSearch `"" . currentTask["exe"] .  ".exe`" raindock]")
+                        SendRainmeterCommand("[!SetOption MeasureIconExe WildcardSearch `"" . currentTask["exe"] .  "." . currentTask["ext"] . "`" raindock]")
                         SendRainmeterCommand("[!UpdateMeasure MeasureIconExe raindock]")
                         SendRainmeterCommand("[!CommandMeasure MeasureIconExe `"Update`" raindock]")
                         While(!FileExist( iconExtracted ) && Counter < 200){
@@ -283,10 +365,10 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
                         }
 
                         if(Counter > 199){
-                            renderIconTheme("255,255,255,255",renderedIcon,Initials)
+                            renderIconTheme("255,255,255,255",renderedIcon,pinnedTask,Initials)
                         }
                         else{
-                            renderIconTheme(iconExtracted,renderedIcon)
+                            renderIconTheme(iconExtracted,renderedIcon,pinnedTask)
                         }
                     }
                 }
@@ -297,136 +379,145 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
     } 
 }
 
+enumeratedPinnedItems()
+{
+    Global dirPinnedItems
+    Global arrayPinnedItems
+    newArrayPinnedItems := []
+
+    Loop Files, dirPinnedItems . "\*.lnk" 
+    {
+        FileGetShortcut A_LoopFilePath, OutTarget
+        if (OutTarget)
+        {
+            newArrayPinnedItems.push(OutTarget)
+        }
+    }
+
+    if(!getArraysIdentical(arrayPinnedItems,newArrayPinnedItems))
+    {
+        arrayPinnedItems := newArrayPinnedItems
+    }  
+}
+
 ListTaskbarWindows()
 {
     Global TaskArray
-    OldTaskArray := TaskArray
-    TaskArray := {}
-    TaskList := ""
-    TaskCount := 0
+    Global arrayPinnedItems
     Global dockConfig
     Global iconTheme
-    Global taskmax
     Global ActiveHwnd
 
+    tablePinnedTasks := {}
+    OldTaskArray := TaskArray
+    TaskArray := []
+    TaskList := ""
+
+    For pinnedItem in arrayPinnedItems
+    {
+        SplitPath arrayPinnedItems[pinnedItem] ,OutFileName,Path,OutExtension,OutNameNoExt
+        tablePinnedTasks[OutNameNoExt] := arrayPinnedItems[pinnedItem]
+        TaskList := Tasklist . "{{{111" . OutNameNoExt . "}}}" . OutNameNoExt . ","
+    }
+    
     id := WinGetList(,, "NxDock|Program Manager|Task Switching|^$")
     Loop id.Length()
     {
-      thisId := id[A_Index]
-      WinGetPos(,,, Height,"ahk_id " thisId)
-      SplitPath WinGetProcessPath("ahk_id " thisId) ,, Path,, SortName
-      If (Height && !IsWindowCloaked(thisId) && !(WinGetExStyle("ahk_id " thisId) & 0x8000088))
-      {
-        TaskCount := ++TaskCount
-        TaskList := Tasklist . "{{{" . SortName . "}}}" . thisId . ","
-      }
+        thisId := id[A_Index]
+        WinGetPos(,,, Height,"ahk_id " thisId)
+        SplitPath WinGetProcessPath("ahk_id " thisId) ,, Path,, SortName
+        if(InStr(TaskList, "{{{111" . SortName . "}}}"))
+        {
+            if(tablePinnedTasks[SortName])
+            {   
+                
+                TaskList := StrReplace(TaskList, "{{{111" . SortName . "}}}" . SortName . ",", "")
+                tablePinnedTasks.delete(SortName)
+            }
+            SortName := "111" . SortName
+        }
+
+        If (Height && !IsWindowCloaked(thisId) && !(WinGetExStyle("ahk_id " thisId) & 0x8000088))
+        {
+            TaskList := Tasklist . "{{{" . SortName . "}}}" . thisId . ","
+        }
     }
-    
+
     TaskList := Sort(TaskList, "D,")
     TaskList := RegExReplace(TaskList, "{{{.*?}}}")
+    TaskList := RegExReplace(TaskList, ",$" )
+
     activeTask := false
     ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
+
     Loop Parse, TaskList, "," 
     {
-        if WinActive("ahk_id " A_LoopField)
+        if !(A_LoopField is "digit") 
         {
-            activeTask := true
-            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . A_Index . ":X] `" raindock]")
+            fullPath := tablePinnedTasks[A_LoopField]
+            ClassName := A_LoopField
+            Titlevar := A_LoopField
         }
-        ClassName := WinGetClass("ahk_id " A_LoopField)
-        Titlevar := WinGetTitle("ahk_id " A_LoopField)
+        else
+        {
+            fullPath := WinGetProcessPath("ahk_id " A_LoopField)
+            ClassName := WinGetClass("ahk_id " A_LoopField)
+            Titlevar := WinGetTitle("ahk_id " A_LoopField)
+        }
         
-        SplitPath WinGetProcessPath("ahk_id " A_LoopField) ,, Path,, OutNameNoExt
+        SplitPath fullPath ,, Path,OutExtension,OutNameNoExt    
 
-        if(ClassName != "ApplicationFrameWindow"){
+        if(ClassName != "ApplicationFrameWindow")
+        {
             ExeName := OutNameNoExt
         }
-        else{
+        else
+        {
             TitleArray := StrSplit(Titlevar, "- ") 
             ExeName := TitleArray[TitleArray.length()]
         }
-        
         TaskArray[A_Index,"id"] := A_LoopField 
         TaskArray[A_Index,"classname"] := ClassName
         TaskArray[A_Index,"title"] := Titlevar
         TaskArray[A_Index,"exe"] := ExeName
+        TaskArray[A_Index,"ext"] := OutExtension
         TaskArray[A_Index,"path"] := Path
+        TaskArray[A_Index,"fullPath"] := fullPath
+
+        if WinActive("ahk_id " A_LoopField)
+        {
+            activeTask := true
+            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . A_Index . ":X] `" raindock]")
+            SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
+        }
     }
 
-    if(activeTask){
-        SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
-    }
-    else{
+    if(!activeTask)
+    {
         SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
     }
 
-    if(TaskArray != OldTaskArray)
+    For TaskId in TaskArray
     {
-        if(OldTaskArray.length() != TaskArray.length())
+        if(TaskArray[TaskId,"id"] . TaskArray[TaskId,"title"] != OldTaskArray[TaskId,"id"] . OldTaskArray[TaskId,"title"] )
         {
-        
-            if(OldTaskArray.length() > TaskArray.length())
-            {
-                Loop (taskmax - TaskCount)
-                {
-                    SendRainmeterCommand("[!SetOption Task" .  (A_Index + TaskCount) . " ImageName `"`" raindock]")
-                    SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskCount) . " raindock]")
-                }
-            }
-            MoveDock(Floor((A_ScreenWidth - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * TaskCount)) / 2 ) - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * 2),dockConfig["x"])
+            SendTaskIconInfo(TaskArray[TaskId],OldTaskArray[TaskId],A_Index)
         }
+    }
 
-        For TaskId in TaskArray
+    if(OldTaskArray.length() != TaskArray.length())
+    {
+        if(OldTaskArray.length() > TaskArray.length())
         {
-            if(TaskId <= TaskCount)
+            Loop (OldTaskArray.length() - TaskArray.length())
             {
-                SendTaskIconInfo(TaskArray[TaskId],OldTaskArray[TaskId],TaskId)
+                SendRainmeterCommand("[!SetOption Task" .  (A_Index + TaskArray.length()) . " ImageName `"`" raindock]")
+                SendRainmeterCommand("[!HideMeter Task" .  (A_Index + TaskArray.length()) . " raindock]")
             }
         }
+        MoveDock(Floor((A_ScreenWidth - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * TaskArray.length())) / 2 ) - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * 2),dockConfig["x"])
     }
 }
 
-dockStateHandler()
-{
-    Global dockConfig
-    Global iconTheme
-    Global oldDockMinMax := dockConfig["minMax"]
-    MouseGetPos xpos, ypos 
-    WinGetPos(,,CurrentWinWidth, CurrentWinHeight,"A")
-
-    if(CurrentWinWidth = A_ScreenWidth && CurrentWinHeight = A_ScreenHeight)
-    {
-        dockConfig["minMax"] := 2
-    }
-    else if(WinGetMinMax("A"))
-    {
-        dockConfig["minMax"] := 1
-    }
-    else
-    {
-        dockConfig["minMax"] := 0
-    }
-    if(oldDockMinMax != dockConfig["minMax"])
-    {
-        if(dockConfig["minMax"] < 1){
-            dockShow()
-            return
-        }
-        else{
-            dockHide()
-        }
-    }
-
-    if(dockConfig["minMax"] = 1)
-    {
-        if(ypos >= (A_ScreenHeight - 2))
-        {
-            dockShow()
-        }
-        else if(ypos <= (A_ScreenHeight - (iconTheme["w"] + (iconTheme["paddingY"] * 2)))){
-            dockHide()
-        }
-    }
-}
 
 
