@@ -7,8 +7,16 @@ TraySetIcon(A_WorkingDir . "\raindock.ico")
 dirTemp := EnvGet("TMP")
 dirThemeTemp := dirTemp . "\raindock"
 dirUser := EnvGet("USERPROFILE") . "\raindock"
+dirCustomIcons := dirUser . "\customIcons"
 dirPinnedItems := EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 iniFile := dirUser . "\raindock.ini"
+
+iconTheme := []
+iconTheme["location"] := StrReplace(IniRead(iniFile, "Variables", "ThemePath"), "#@#", A_WorkingDir)
+iconTheme["w"] := IniRead(iniFile, "Variables", "Taskwidth")
+iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconTaskXPadding")
+iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconTaskYPadding")
+iconTheme["accentColor"] := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
 
 spotifyWidget := []
 spotifyWidget["active"] := False
@@ -18,12 +26,13 @@ if(FileExist(dirTemp . "\cover.bmp"))
     spotifyWidget["sourceCover"] := dirTemp . "\cover.bmp"
     spotifyWidget["lastAlbum"] := ""
     spotifyWidget["renderedCover"] := dirTemp . "\smallcover.bmp"
-    SetTimer "RenderSpotifyIcon", 1000
+    SetTimerandFire("RenderSpotifyIcon", 1000)
 }
 if(!FileExist(dirUser))
 {
     DirCreate dirUser
-    FileCopy A_WorkingDir . "\@Resources\default.ini", dirUser . "\raindock.ini"
+    DirCreate dirCustomIcons
+    FileCopy A_WorkingDir . "\default.ini", dirUser . "\raindock.ini"
     SendRainmeterCommand("[!Refresh raindock]")
 }
 if(!FileExist(dirThemeTemp))
@@ -31,13 +40,6 @@ if(!FileExist(dirThemeTemp))
     DirCreate dirThemeTemp
     SendRainmeterCommand("[!Refresh raindock]")
 }
-
-iconTheme := []
-iconTheme["location"] := StrReplace(IniRead(iniFile, "Variables", "ThemePath"), "#@#", A_WorkingDir)
-iconTheme["w"] := IniRead(iniFile, "Variables", "Taskwidth")
-iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconTaskXPadding")
-iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconTaskYPadding")
-iconTheme["accentColor"] := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
 
 dockConfig := []
 dockConfig["h"] := (iconTheme["w"] + (iconTheme["paddingY"] * 2)) + 95
@@ -54,14 +56,33 @@ ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " raindock]")
 SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
 
+OnMessage(16665, "taskItemMenu")
 OnMessage(16666, "taskSwitch")
+OnMessage(16667, "taskManage")
 OnMessage(16668, "clearIconCache")
 OnMessage(16669, "selectIconTheme")
 
-enumeratedPinnedItems
-SetTimer "enumeratedPinnedItems", 3000
-SetTimer "ListTaskbarWindows", 300
-SetTimer "dockStateHandler", 300
+SetTimerAndFire("enumeratedPinnedItems", 3000)
+SetTimerAndFire("ListTaskbarWindows", 300)
+SetTimerAndFire("dockStateHandler", 300)
+
+SetTimerAndFire(timedFunction, timedDuration)
+{
+    %timedFunction%()
+    SetTimer timedFunction, timedDuration
+}
+
+hasValue(haystack, needle) 
+{
+    if(!isObject(haystack))
+        return false
+    if(haystack.Length()==0)
+        return false
+    for k,v in haystack
+        if(v==needle)
+            return true
+    return false
+}
 
 clearIconCache()
 {
@@ -75,8 +96,12 @@ selectIconTheme()
 {
     Global iniFile
     Global dirUser
-    IniWrite DirSelect("*" . dirUser, Options, Prompt) . "\" , iniFile, "Variables", "ThemePath"
-    clearIconCache()
+    newTheme := DirSelect("*" . dirUser, Options, Prompt)
+    if(newTheme)
+    {   
+        IniWrite newTheme . "\" , iniFile, "Variables", "ThemePath"
+        clearIconCache()
+    }
 }
 
 dockHide()
@@ -222,6 +247,148 @@ taskSwitch(wParam, lParam)
     }
 }
 
+taskManage(wParam, lParam)
+{
+    Global TaskArray
+    Global selectedTask
+    Global dirPinnedItems
+    Global dirCustomIcons
+    Global dirThemeTemp
+
+    if(wParam = "minimize")
+    {
+        WinMinimize "ahk_id " TaskArray[selectedTask]["id"]
+    }
+    else if(wParam = "open")
+    {
+        run TaskArray[selectedTask]["fullpath"]
+    }
+    else if(wParam = "maximize")
+    {
+        WinMaximize "ahk_id " TaskArray[selectedTask]["id"]
+    }
+    else if(wParam = "properties")
+    {
+        Run "properties " . TaskArray[selectedTask]["fullpath"]
+    }
+    else if(wParam = "close")
+    {
+        WinClose "ahk_id " TaskArray[selectedTask]["id"]
+    }
+    else if(wParam = "unpin from dock")
+    {
+        FileDelete dirPinnedItems . "\" . TaskArray[selectedTask]["exe"] . ".lnk"
+    }
+    else if(wParam = "pin to dock")
+    {
+        FileCreateShortcut TaskArray[selectedTask]["fullpath"],  dirPinnedItems . "\" . TaskArray[selectedTask]["exe"] . ".lnk"
+    }
+    else if(wParam = "change icon")
+    {   
+        newIcon := FileSelect(,,, "Image Files (*.png)")
+        if(newIcon)
+        {
+            newCustomIconFile := dirCustomIcons . "\" . TaskArray[selectedTask]["exe"] . ".png"
+            FileCopy newIcon, newCustomIconFile
+            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . ".bmp" ,0)
+            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . "_pin.bmp" ,1)
+        }
+    }
+    else if(wParam = "reload icon")
+    {   
+        fileIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . ".bmp"
+        filePinIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . "_pin.bmp"
+        if(FileExist(fileIcon))
+        {
+            FileDelete fileIcon
+        }
+        if(FileExist(filePinIcon))
+        {
+            FileDelete filePinIcon
+        }
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
+    else if(wParam = "restore original")
+    {   
+        fileIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . ".bmp"
+        filePinIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . "_pin.bmp"
+        customFileIcon := dirCustomIcons . "\" . TaskArray[selectedTask]["exe"] . ".png"
+        if(FileExist(fileIcon))
+        {
+            FileDelete fileIcon
+        }
+        if(FileExist(filePinIcon))
+        {
+            FileDelete filePinIcon
+        }
+        if(FileExist(customFileIcon))
+        {
+            FileDelete customFileIcon
+        }
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
+    else if(wParam = "refresh dock")
+    {
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
+    else if(wParam = "Rainmeter Menu")
+    {
+        SendRainmeterCommand("[!Skinmenu raindock]")
+    }
+}
+
+taskItemMenu(wParam, lParam)
+{
+    Global TaskArray
+    Global selectedTask := wParam
+    Global arrayPinnedItems
+    Global dirPinnedItems
+
+    menuTaskItem := MenuCreate()
+
+    if (TaskArray[selectedTask]["id"] is "digit") 
+    {
+        menuTaskItem.Add "Minimize", "taskManage"
+        menuTaskItem.Add "Maximize", "taskManage"
+        menuTaskItem.Add "Close", "taskManage"
+        menuTaskItem.Add  ; Add a separator line.
+        menuTaskItem.Add "Properties", "taskManage"
+    }
+    else
+    {
+        menuTaskItem.Add "Open", "taskManage"
+        menuTaskItem.Add "Properties", "taskManage"
+    }
+
+    if(hasValue(arrayPinnedItems,TaskArray[selectedTask]["fullpath"]))
+    {
+        menuTaskItem.Add "Unpin from Dock", "taskManage"
+    }
+    else
+    {
+        menuTaskItem.Add "Pin to Dock", "taskManage"
+    }
+
+    subMenuIcon := MenuCreate()
+    subMenuIcon.Add "Change Icon", "taskManage"
+    subMenuIcon.Add "Reload Icon", "taskManage"
+    subMenuIcon.Add "Restore Original", "taskManage"
+
+    menuTaskItem.Add "Icon", subMenuIcon
+
+    menuTaskItem.Add  ; Add a separator line.
+
+    subMenuDock := MenuCreate()
+    subMenuDock.Add "Change Icon Theme", "selectIconTheme"
+    subMenuDock.Add "Redraw All Icons", "clearIconCache"
+    subMenuDock.Add "Refresh Dock", "taskManage"
+    subMenuDock.Add "Rainmeter Menu", "taskManage"
+
+    menuTaskItem.Add "Raindock", subMenuDock
+
+    menuTaskItem.Show
+}
+
 IsWindowCloaked(hwnd)
 {
     static gwa := DllCall("GetProcAddress", "ptr", DllCall("LoadLibrary", "str", "dwmapi", "ptr"), "astr", "DwmGetWindowAttribute", "ptr")
@@ -261,7 +428,6 @@ RenderSpotifyIcon()
         SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"File " . iconTheme["location"] . "spotify.png | RenderSize (#TaskWidth#/2),(#TaskWidth#/2) | move ((#TaskWidth#/2) + #iconTaskXPadding#) ,((#TaskWidth#/2) + #iconTaskYPadding#)`" raindock]")
         SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Rectangle #iconTaskXPadding#,(#TaskWidth# + (#iconTaskYPadding# * 2) + 8),#TaskWidth#,2  | ignore 0| Color 200,200,200,170`" raindock]")
         SendRainmeterCommand("[!UpdateMeasure magickmeter1 raindock]") 
-
     }
 }
 
@@ -303,33 +469,40 @@ SendTaskIconInfo(currentTask,oldTask,taskNumber)
         {
             Global dirThemeTemp
             Global iconTheme            
+            Global dirCustomIcons
             
             pinnedTask := 0
+            pinnedExt := ""
 
             if (currentTask["id"] is "digit") 
             {
-                renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . ".bmp"
                 SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . currentTask["id"] . " 0`"]`"`"`" raindock]")
                 SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
             }
             else
             {
-                renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . "_pin.bmp"
                 pinnedTask := 1
+                pinnedExt := "_pin"
                 SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
                 SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
             }
             
+            renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . pinnedExt . ".bmp"
+
+            SendRainmeterCommand("[!SetOption Task" . taskNumber . " RightMouseUpAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16665 " . taskNumber . " 0`"]`"`"`" raindock]")
             SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
 
             if(currentTask["exe"] = "Spotify" && spotifyWidget["active"] && currentTask["title"] != "Spotify")
             {
-                
                 renderedIcon := spotifyWidget["renderedCover"] 
             }
             else if(!FileExist(renderedIcon))
-            {
-                if(FileExist(iconTheme["location"] . currentTask["exe"] . ".png"))
+            { 
+                if(FileExist(dirCustomIcons . "\" . currentTask["exe"] . ".png"))
+                {    
+                    renderIconTheme(dirCustomIcons . "\" . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
+                }
+                else if(FileExist(iconTheme["location"] . currentTask["exe"] . ".png"))
                 {    
                     renderIconTheme(iconTheme["location"] . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
                 }

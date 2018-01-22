@@ -25,13 +25,19 @@ file chooser for you to select a folder with image files.
 The dock will automatically select icons that have matching names to the exe files in the dock. E.g. Microsoft Edge.exe will use Microsoft Edge.png.
 You may need to rename a few image files if they dont match.
 
-If you make any changes to icons, right click the dock and select "Reload Icons".
+If you make any changes to an icon theme, right click the dock and select "Reload Icons".
 
-Note: All image types are supported.
+You can also **individually change icons** by right clicking the icon itself.
+
+Note: Only PNG is supported for now.
+
+### Pinned Tasks
+
+Might not seem like a big deal, but your pinned taskbar items will be loaded in and work as normal. This took... much code.
 
 ### Automatic Icon Generation
 
-If you don't have a matching image file, the initials for the app and the colors for the app icon will be used to generate a placeholder icon.
+If you don't have a matching image file, the largest ico file for the exe will be loaded. If it is a metro app, the initials of the app will load. Because there is no standard for their icons.
 
 ### Smart Hide
 
