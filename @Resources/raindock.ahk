@@ -62,7 +62,7 @@ renderMeter(currentTask,oldTask,taskNumber)
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" raindock][!SetOption iconExe Text `"" . currentTask["exe"] . "`" raindock][!MoveMeter ([#CURRENTSECTION#:X]+(#TaskWidth#/2)+#iconTaskXPadding#) 0 iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
         Global arrayMediaPlayer
 
-        if(!oldTask || oldTask["id"] != currentTask["id"] || (currentTask["exe"] = "Spotify"  && arrayMediaPlayer["active"]))
+        if(!oldTask || oldTask["id"] != currentTask["id"] || (currentTask["exe"] = arrayMediaPlayer["mediaPlayer"]  && arrayMediaPlayer["active"]))
         {
             Global dirThemeTemp
             Global iconTheme            
@@ -89,7 +89,7 @@ renderMeter(currentTask,oldTask,taskNumber)
             SendRainmeterCommand("[!SetOption Task" . taskNumber . " RightMouseUpAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16665 " . taskNumber . " 0`"]`"`"`" raindock]")
             SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
 
-            if(currentTask["exe"] = "Spotify" && arrayMediaPlayer["active"] && currentTask["title"] != "Spotify")
+            if(currentTask["exe"] = arrayMediaPlayer["mediaPlayer"] && arrayMediaPlayer["active"] && currentTask["title"] != arrayMediaPlayer["mediaPlayer"])
             {
                 renderedIcon := arrayMediaPlayer["renderedCover"] 
             }
