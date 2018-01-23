@@ -31,9 +31,13 @@ if(FileExist(dirTemp . "\cover.bmp"))
 if(!FileExist(dirUser))
 {
     DirCreate dirUser
-    DirCreate dirCustomIcons
+    
     FileCopy A_WorkingDir . "\default.ini", dirUser . "\raindock.ini"
     SendRainmeterCommand("[!Refresh raindock]")
+}
+if(!FileExist(dirCustomIcons))
+{
+    DirCreate dirCustomIcons
 }
 if(!FileExist(dirThemeTemp))
 {
