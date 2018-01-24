@@ -27,12 +27,11 @@ arrayTasks := {}
 ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 
 #Include inc_lib.ahk
+#Include inc_renderer.ahk
 #Include inc_menu.ahk
 #Include inc_animations.ahk
 #Include inc_magickmeter.ahk
 #Include inc_mediaplayer.ahk
-
-;#Include inc_appbar.ahk
 
 if(!FileExist(dirUser))
 {
@@ -43,6 +42,8 @@ if(!FileExist(dirUser))
 if(!FileExist(dirCustomIcons))
 {
     DirCreate dirCustomIcons
+    FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini", 1)
+    SendRainmeterCommand("[!Refresh raindock]")
 }
 if(!FileExist(dirThemeTemp))
 {
@@ -56,96 +57,30 @@ SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
 SetTimerAndFire("getWindows", 300)
 SetTimerAndFire("dockStateHandler", 300)
 
-renderTooltip(currentTask,taskNumber)
+createTaskObject(taskRef, targetArray)
 {
-     SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" raindock][!SetOption iconExe Text `"" . currentTask["exe"] . "`" raindock][!MoveMeter ([#CURRENTSECTION#:X]+(#TaskWidth#/2)+#iconTaskXPadding#) 0 iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
-}
-
-renderMeter(currentTask,taskNumber)
-{
-    Global arrayMediaPlayer
-    Global dirThemeTemp
-    Global iconTheme            
-    Global dirCustomIcons
-
-    pinnedTask := 0
-    pinnedExt := ""
-
-    if (currentTask["id"] is "digit") 
+    if (A_LoopField is "digit")
     {
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . currentTask["id"] . " 0`"]`"`"`" raindock]")
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+        fullPath := WinGetProcessPath("ahk_id " A_LoopField)
+        SplitPath fullPath , OutFileName, OutDir, OutExtension, OutNameNoExt
+        targetArray[A_Index,"id"] := A_LoopField
+        targetArray[A_Index,"classname"] := WinGetClass("ahk_id " A_LoopField)
+        targetArray[A_Index,"title"] := WinGetTitle("ahk_id " A_LoopField)
     }
     else
     {
-        pinnedTask := 1
-        pinnedExt := "_pin"
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+        fullPath := A_LoopField
+        SplitPath fullPath , OutFileName, OutDir, OutExtension, OutNameNoExt
+        targetArray[A_Index,"id"] := OutNameNoExt
+        targetArray[A_Index,"classname"] := OutNameNoExt
+        targetArray[A_Index,"title"] := OutNameNoExt
     }
-
-    renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . pinnedExt . ".bmp"
-
-    SendRainmeterCommand("[!SetOption Task" . taskNumber . " RightMouseUpAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16665 " . taskNumber . " 0`"]`"`"`" raindock]")
-    SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
-
-    if(currentTask["exe"] = arrayMediaPlayer["mediaPlayer"] && arrayMediaPlayer["active"] && currentTask["title"] != arrayMediaPlayer["mediaPlayer"])
-    {
-        renderedIcon := arrayMediaPlayer["renderedCover"] 
-    }
-    else if(!FileExist(renderedIcon))
-    { 
-        if(FileExist(dirCustomIcons . "\" . currentTask["exe"] . ".png"))
-        {    
-            renderIconTheme(dirCustomIcons . "\" . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
-        }
-        else if(FileExist(iconTheme["location"] . currentTask["exe"] . ".png"))
-        {    
-            renderIconTheme(iconTheme["location"] . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
-        }
-        else
-        {
-            iconExtracted :=  dirThemeTemp . "\" . currentTask["exe"] . ".ico"
-            extractExe := currentTask["path"]
-            Initials := currentTask["exe"]
-            Loop Parse, Initials, A_Space
-            {
-                x := x SubStr(A_LoopField, "1", "1")
-                x := StrUpper(x)
-                Initials := x
-            }
-            Initials := StrReplace(Initials, "[", "")
-
-            if(currentTask["classname"] = "ApplicationFrameWindow")
-            {
-                renderIconTheme("255,255,255,255",renderedIcon,pinnedTask,Initials)
-            }
-            else{
-                Counter := 1
-                SendRainmeterCommand("[!EnableMeasure MeasureIconExe raindock]")
-                SendRainmeterCommand("[!SetOption MeasureIconExe IconPath `"" .  iconExtracted   . "`" raindock]")
-                SendRainmeterCommand("[!SetOption MeasureIconExe Path `"" . extractExe .  "`" raindock]")
-                SendRainmeterCommand("[!SetOption MeasureIconExe WildcardSearch `"" . currentTask["exe"] .  "." . currentTask["ext"] . "`" raindock]")
-                SendRainmeterCommand("[!UpdateMeasure MeasureIconExe raindock]")
-                SendRainmeterCommand("[!CommandMeasure MeasureIconExe `"Update`" raindock]")
-                While(!FileExist( iconExtracted ) && Counter < 200){
-                    Sleep 30
-                    Counter++
-                }
-
-                if(Counter > 199){
-                    renderIconTheme("255,255,255,255",renderedIcon,pinnedTask,Initials)
-                }
-                else{
-                    renderIconTheme(iconExtracted,renderedIcon,pinnedTask)
-                }
-            }
-        }
-    }
-    SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . renderedIcon . "`" raindock]")
-    SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
+    targetArray[A_Index,"fullPath"] := fullPath
+    targetArray[A_Index,"exe"] := OutNameNoExt
+    targetArray[A_Index,"ext"] := OutExtension
+    targetArray[A_Index,"exeext"] := OutFileName
+    targetArray[A_Index,"path"] := OutDir
 }
-
 
 getWindows()
 {
@@ -199,27 +134,7 @@ getWindows()
 
     Loop Parse, csvTaskList, "," 
     {
-        if (A_LoopField is "digit")
-        {
-            fullPath := WinGetProcessPath("ahk_id " A_LoopField)
-            SplitPath fullPath , OutFileName, OutDir, OutExtension, OutNameNoExt
-            arrayTasksCheck[A_Index,"id"] := A_LoopField
-            arrayTasksCheck[A_Index,"classname"] := WinGetClass("ahk_id " A_LoopField)
-            arrayTasksCheck[A_Index,"title"] := WinGetTitle("ahk_id " A_LoopField)
-        }
-        else
-        {
-            fullPath := A_LoopField
-            SplitPath fullPath , OutFileName, OutDir, OutExtension, OutNameNoExt
-            arrayTasksCheck[A_Index,"id"] := OutNameNoExt
-            arrayTasksCheck[A_Index,"classname"] := OutNameNoExt
-            arrayTasksCheck[A_Index,"title"] := OutNameNoExt
-        }
-        arrayTasksCheck[A_Index,"fullPath"] := fullPath
-        arrayTasksCheck[A_Index,"exe"] := OutNameNoExt
-        arrayTasksCheck[A_Index,"ext"] := OutExtension
-        arrayTasksCheck[A_Index,"exeext"] := OutFileName
-        arrayTasksCheck[A_Index,"path"] := OutDir
+        createTaskObject(A_LoopField,arrayTasksCheck)
     }
     
     SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
