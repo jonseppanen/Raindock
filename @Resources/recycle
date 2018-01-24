@@ -1,0 +1,46 @@
+
+    Loop Parse, TaskList, "," 
+    {
+        if !(A_LoopField is "digit") 
+        {
+            fullPath := tablePinnedTasks[A_LoopField]
+            ClassName := A_LoopField
+            Titlevar := A_LoopField
+        }
+        else
+        {
+            fullPath := WinGetProcessPath("ahk_id " A_LoopField)
+            ClassName := WinGetClass("ahk_id " A_LoopField)
+            Titlevar := WinGetTitle("ahk_id " A_LoopField)
+        }
+        
+        SplitPath fullPath ,, Path,OutExtension,OutNameNoExt    
+
+        if(ClassName != "ApplicationFrameWindow")
+        {
+            ExeName := OutNameNoExt
+        }
+        else
+        {
+            TitleArray := StrSplit(Titlevar, "- ") 
+            ExeName := TitleArray[TitleArray.length()]
+        }
+
+        TaskArray[A_Index,"fullPath"] := fullPath
+
+        TaskArray[A_Index,"id"] := A_LoopField 
+        TaskArray[A_Index,"classname"] := ClassName
+        TaskArray[A_Index,"title"] := Titlevar
+
+        TaskArray[A_Index,"exe"] := ExeName
+        TaskArray[A_Index,"ext"] := OutExtension
+        TaskArray[A_Index,"path"] := Path
+        
+
+        if WinActive("ahk_id " A_LoopField)
+        {
+            activeTask := true
+            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . A_Index . ":X] `" raindock]")
+            SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
+        }
+    }

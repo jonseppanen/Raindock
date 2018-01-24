@@ -17,24 +17,6 @@ hasValue(haystack, needle)
     return false
 }
 
-getArraysIdentical(firstArray,SecondArray)
-{
-    if(firstArray.length() != SecondArray.length())
-    {
-        return false
-    }
-
-    For arrKey in firstArray
-    {
-        if(firstArray[arrKey] != SecondArray[arrKey])
-        {
-            return false
-        }
-    }
-
-    return true
-}
-
 IsWindowCloaked(hwnd)
 {
     static gwa := DllCall("GetProcAddress", "ptr", DllCall("LoadLibrary", "str", "dwmapi", "ptr"), "astr", "DwmGetWindowAttribute", "ptr")
@@ -80,24 +62,69 @@ taskSwitch(wParam, lParam)
     }
 }
 
+
+getArraysIdentical(firstArray,SecondArray)
+{
+    if(firstArray.length() != SecondArray.length())
+    {
+        return false
+    }
+
+    For arrKey in firstArray
+    {
+        if(firstArray[arrKey] is "object")
+        {
+            if(!getArraysIdentical(firstArray[arrKey],SecondArray[arrKey]))
+            {
+                return false
+            }
+        }
+        else
+        {
+            if(firstArray[arrKey] != SecondArray[arrKey])
+            {
+                return false
+            }
+        }
+    }    
+
+    return true
+}
+
+csvPinnedItems := ""
+
 SetTimerAndFire("getPinnedTaskbarIcons", 3000)
 getPinnedTaskbarIcons()
 {
     Global dirPinnedItems
-    Global arrayPinnedItems
-    newArrayPinnedItems := []
+    Global csvPinnedItems
+    csvPinnedItemsCheck := ""
 
-    Loop Files, dirPinnedItems . "\*.lnk" 
+    Loop Files, dirPinnedItems . "\*.lnk" ,F
     {
-        FileGetShortcut A_LoopFilePath, OutTarget
-        if (OutTarget)
+        FileGetShortcut A_LoopFilePath, OutTarget, OutDir
+        SplitPath OutTarget , OutFileName
+        constructedPinTarget := OutTarget
+        if(OutDir)
         {
-            newArrayPinnedItems.push(OutTarget)
+            constructedPinTarget := OutDir . "\" . OutFileName
         }
+        
+        csvPinnedItemsCheck := csvPinnedItemsCheck . "{{{111" . OutFileName . "}}}" . constructedPinTarget . ","
     }
 
-    if(!getArraysIdentical(arrayPinnedItems,newArrayPinnedItems))
-    {
-        arrayPinnedItems := newArrayPinnedItems
+    if(csvPinnedItemsCheck != csvPinnedItems)
+    {  
+        csvPinnedItems := csvPinnedItemsCheck 
     }  
+}
+
+AutoSort(Arr) 
+{
+    t:=Object()
+    for k, v in Arr
+        t[RegExReplace(v,"\s")]:=v
+    for k, v in t
+        Arr[A_Index]:=v
+    return Arr
 }

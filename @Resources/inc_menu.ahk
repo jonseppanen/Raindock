@@ -1,7 +1,7 @@
 OnMessage(16667, "taskManage")
 taskManage(wParam, lParam)
 {
-    Global TaskArray
+    Global arrayTasks
     Global selectedTask
     Global dirPinnedItems
     Global dirCustomIcons
@@ -9,32 +9,32 @@ taskManage(wParam, lParam)
 
     if(wParam = "minimize")
     {
-        WinMinimize "ahk_id " TaskArray[selectedTask]["id"]
+        WinMinimize "ahk_id " arrayTasks[selectedTask]["id"]
     }
     else if(wParam = "open")
     {
-        run TaskArray[selectedTask]["fullpath"]
+        run arrayTasks[selectedTask]["fullpath"]
     }
     else if(wParam = "maximize")
     {
-        WinMaximize "ahk_id " TaskArray[selectedTask]["id"]
+        WinMaximize "ahk_id " arrayTasks[selectedTask]["id"]
     }
     else if(wParam = "properties")
     {
-        Run "properties " . TaskArray[selectedTask]["fullpath"]
+        Run "properties " . arrayTasks[selectedTask]["fullpath"]
     }
     else if(wParam = "close")
     {
-        WinClose "ahk_id " TaskArray[selectedTask]["id"]
+        WinClose "ahk_id " arrayTasks[selectedTask]["id"]
     }
     else if(wParam = "unpin from dock")
     {
-        FileDelete dirPinnedItems . "\" . TaskArray[selectedTask]["exe"] . ".lnk"
+        FileDelete dirPinnedItems . "\" . arrayTasks[selectedTask]["exe"] . ".lnk"
         getPinnedTaskbarIcons()
     }
     else if(wParam = "pin to dock")
     {
-        FileCreateShortcut TaskArray[selectedTask]["fullpath"],  dirPinnedItems . "\" . TaskArray[selectedTask]["exe"] . ".lnk"
+        FileCreateShortcut arrayTasks[selectedTask]["fullpath"],  dirPinnedItems . "\" . arrayTasks[selectedTask]["exe"] . ".lnk"
         getPinnedTaskbarIcons()
     }
     else if(wParam = "change icon")
@@ -42,16 +42,16 @@ taskManage(wParam, lParam)
         newIcon := FileSelect(,,, "Image Files (*.png)")
         if(newIcon)
         {
-            newCustomIconFile := dirCustomIcons . "\" . TaskArray[selectedTask]["exe"] . ".png"
+            newCustomIconFile := dirCustomIcons . "\" . arrayTasks[selectedTask]["exe"] . ".png"
             FileCopy newIcon, newCustomIconFile
-            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . ".bmp" ,0)
-            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . "_pin.bmp" ,1)
+            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . ".bmp" ,0)
+            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_pin.bmp" ,1)
         }
     }
     else if(wParam = "reload icon")
     {   
-        fileIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . ".bmp"
-        filePinIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . "_pin.bmp"
+        fileIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . ".bmp"
+        filePinIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_pin.bmp"
         if(FileExist(fileIcon))
         {
             FileDelete fileIcon
@@ -64,9 +64,9 @@ taskManage(wParam, lParam)
     }
     else if(wParam = "restore original")
     {   
-        fileIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . ".bmp"
-        filePinIcon := dirThemeTemp . "\" . TaskArray[selectedTask]["exe"] . "_pin.bmp"
-        customFileIcon := dirCustomIcons . "\" . TaskArray[selectedTask]["exe"] . ".png"
+        fileIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . ".bmp"
+        filePinIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_pin.bmp"
+        customFileIcon := dirCustomIcons . "\" . arrayTasks[selectedTask]["exe"] . ".png"
         if(FileExist(fileIcon))
         {
             FileDelete fileIcon
@@ -94,14 +94,14 @@ taskManage(wParam, lParam)
 OnMessage(16665, "taskItemMenu")
 taskItemMenu(wParam, lParam)
 {
-    Global TaskArray
+    Global arrayTasks
     Global selectedTask := wParam
-    Global arrayPinnedItems
+    Global csvPinnedItems
     Global dirPinnedItems
 
     menuTaskItem := MenuCreate()
 
-    if (TaskArray[selectedTask]["id"] is "digit") 
+    if (arrayTasks[selectedTask]["id"] is "digit") 
     {
         menuTaskItem.Add "Minimize", "taskManage"
         menuTaskItem.Add "Maximize", "taskManage"
@@ -115,7 +115,7 @@ taskItemMenu(wParam, lParam)
         menuTaskItem.Add "Properties", "taskManage"
     }
 
-    if(hasValue(arrayPinnedItems,TaskArray[selectedTask]["fullpath"]))
+    if(InStr(csvPinnedItems, arrayTasks[selectedTask]["fullPath"]))
     {
         menuTaskItem.Add "Unpin from Dock", "taskManage"
     }
