@@ -12,19 +12,23 @@ dirPinnedItems := EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Internet E
 iniFile := dirUser . "\raindock.ini"
 iconTheme := {}
 iconTheme["location"] := StrReplace(IniRead(iniFile, "Variables", "ThemePath"), "#@#", A_WorkingDir)
-iconTheme["w"] := IniRead(iniFile, "Variables", "Taskwidth")
-iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconTaskXPadding")
-iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconTaskYPadding")
+iconTheme["w"] := IniRead(iniFile, "Variables", "iconWidth")
+iconTheme["h"] := IniRead(iniFile, "Variables", "iconHeight")
+iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconHorizontalPadding")
+iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconVerticalPadding")
+iconTheme["wFull"] := (iconTheme["w"] + (iconTheme["paddingX"] * 2))
+iconTheme["hFull"] := (iconTheme["h"] + (iconTheme["paddingY"] * 2))
 iconTheme["accentColor"] := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
 dockConfig := {}
-dockConfig["h"] := (iconTheme["w"] + (iconTheme["paddingY"] * 2)) + 95
-dockConfig["x"] := 0
-dockConfig["y"] := (A_ScreenHeight - dockConfig["h"])
+dockConfig["h"] := (iconTheme["h"] + (iconTheme["paddingY"] * 2)) + 95
+dockConfig["y"] := (A_ScreenHeight)
+dockConfig["x"] := ((A_ScreenWidth / 2) - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * 2))
 dockConfig["animating"] := false
 dockConfig["minMax"] := 0
-dockConfig["visible"] := true
+dockConfig["visible"] := false
 arrayTasks := {}
 ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
+SendRainmeterCommand("[!Move `" " . dockConfig["x"] . " `" `" " . dockConfig["y"] . " `" `"raindock`"]")
 
 #Include inc_lib.ahk
 #Include inc_renderer.ahk
@@ -36,7 +40,7 @@ ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 if(!FileExist(dirUser))
 {
     DirCreate dirUser
-    FileCopy A_WorkingDir . "\default.ini", dirUser . "\raindock.ini"
+    FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini",1)
     SendRainmeterCommand("[!Refresh raindock]")
 }
 if(!FileExist(dirCustomIcons))
@@ -55,7 +59,8 @@ SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " raindock]")
 SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
 
 SetTimerAndFire("getWindows", 300)
-SetTimerAndFire("dockStateHandler", 300)
+SetTimer("dockStateHandler", 300)
+dockShow()
 
 createTaskObject(taskRef, targetArray)
 {
@@ -90,11 +95,14 @@ getWindows()
     Global ActiveHwnd
     Global arrayTasks
     Global arrayMediaPlayer
+    Global ActiveIndicator
+    ActiveIndicatorCheck := false
     arrayTasksCheck := {}
+
 
     csvTaskList := csvPinnedItems
     ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
-    ActiveIndicator := false
+    
     
     id := WinGetList(,, "NxDock|Program Manager|Task Switching|^$")
     Loop id.Length()
@@ -136,8 +144,6 @@ getWindows()
     {
         createTaskObject(A_LoopField,arrayTasksCheck)
     }
-    
-    SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
                 
     For TaskId in arrayTasksCheck
     {
@@ -152,15 +158,24 @@ getWindows()
         
         if WinActive("ahk_id " arrayTasksCheck[TaskId,"id"])
         {
-            ActiveIndicator := true
-            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . TaskId . ":X] `" raindock]")
-            SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
+            ActiveIndicatorCheck := TaskId
         }
     }
+
     
-    if(!ActiveIndicator)
+
+    if(ActiveIndicatorCheck != ActiveIndicator)
     { 
-        SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
+        ActiveIndicator := ActiveIndicatorCheck
+        if(ActiveIndicatorCheck)
+        { 
+            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . ActiveIndicatorCheck . ":X] `" raindock]")
+            SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
+        }
+        else
+        { 
+            SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
+        }
     }
 
     if(arrayTasks.length() != arrayTasksCheck.length())
@@ -173,7 +188,8 @@ getWindows()
                 SendRainmeterCommand("[!HideMeter Task" .  (A_Index + arrayTasksCheck.length()) . " raindock]")
             }
         }
-        MoveDock(Floor((A_ScreenWidth - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * arrayTasksCheck.length())) / 2 ) - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * 2),dockConfig["x"])
+
+        MoveDock((A_ScreenWidth / 2) - (iconTheme["wFull"] * arrayTasksCheck.length() / 2) - (iconTheme["wFull"] * 2))
     }
 
     arrayTasks := arrayTasksCheck

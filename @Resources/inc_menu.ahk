@@ -6,6 +6,7 @@ taskManage(wParam, lParam)
     Global dirPinnedItems
     Global dirCustomIcons
     Global dirThemeTemp
+    Global iniFile
 
     if(wParam = "minimize")
     {
@@ -89,6 +90,24 @@ taskManage(wParam, lParam)
     {
         SendRainmeterCommand("[!Skinmenu raindock]")
     }
+    else if(wParam = "Resize Icon Horizontal Width")
+    {
+        UserInput := InputBox("Please select a new Horizontal icon width", "Phone Number")
+        if(UserInput)
+        {
+            IniWrite UserInput , iniFile, "Variables", "iconWidth"
+            clearIconCache()
+        }
+    }
+    else if(wParam = "Resize Icon Vertical Width")
+    {
+        UserInput := InputBox("Please select a new Vertical icon width", "Phone Number")
+        if(UserInput)
+        {
+            IniWrite UserInput , iniFile, "Variables", "iconHeight"
+            clearIconCache()
+        }
+    }
 }
 
 OnMessage(16665, "taskItemMenu")
@@ -134,6 +153,8 @@ taskItemMenu(wParam, lParam)
     menuTaskItem.Add  ; Add a separator line.
 
     subMenuDock := MenuCreate()
+    subMenuDock.Add "Resize Icon Horizontal Width", "taskManage"
+    subMenuDock.Add "Resize Icon Vertical Width", "taskManage"
     subMenuDock.Add "Change Icon Theme", "selectIconTheme"
     subMenuDock.Add "Redraw All Icons", "clearIconCache"
     subMenuDock.Add "Refresh Dock", "taskManage"

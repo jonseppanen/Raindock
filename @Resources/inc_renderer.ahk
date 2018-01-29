@@ -39,11 +39,13 @@ renderMeter(currentTask,taskNumber)
     { 
         if(FileExist(dirCustomIcons . "\" . currentTask["exe"] . ".png"))
         {    
-            renderIconTheme(dirCustomIcons . "\" . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
+            renderIconTheme(dirCustomIcons . "\" . currentTask["exe"] . ".png",renderedIcon,pinnedTask)    
+            
         }
-        else if(FileExist(iconTheme["location"] . currentTask["exe"] . ".png"))
+        else if(FileExist(iconTheme["location"] . "\" . currentTask["exe"] . ".png"))
         {    
-            renderIconTheme(iconTheme["location"] . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
+            
+            renderIconTheme(iconTheme["location"] . "\" . currentTask["exe"] . ".png",renderedIcon,pinnedTask)          
         }
         else
         {

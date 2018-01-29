@@ -103,6 +103,10 @@ getPinnedTaskbarIcons()
     Loop Files, dirPinnedItems . "\*.lnk" ,F
     {
         FileGetShortcut A_LoopFilePath, OutTarget, OutDir
+        if(!OutTarget)
+        {
+            continue
+        }
         SplitPath OutTarget , OutFileName
         constructedPinTarget := OutTarget
         if(OutDir)
@@ -128,3 +132,4 @@ AutoSort(Arr)
         Arr[A_Index]:=v
     return Arr
 }
+

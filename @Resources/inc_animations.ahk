@@ -10,7 +10,7 @@ dockHide()
     dockConfig["y"] := A_ScreenHeight - dockConfig["h"]
     Loop (dockConfig["h"])
     {
-        dockConfig["y"] := dockConfig["y"] +1
+        dockConfig["y"] := dockConfig["y"] + 1
         SendRainmeterCommand("[!Move `" " . dockConfig["x"] . " `" `" " . dockConfig["y"] . " `" `"raindock`"]")
     }
     dockConfig["animating"] := false
@@ -34,9 +34,10 @@ dockShow()
     dockConfig["animating"] := false
 }
 
-MoveDock(MoveX,oldPos)
+MoveDock(MoveX)
 {
     Global dockConfig
+    oldPos := dockConfig["x"]
 
     if(MoveX < dockConfig["x"]){
         step := (MoveX - oldPos)  / dockConfig["h"]
@@ -80,6 +81,7 @@ dockStateHandler()
     {
         dockConfig["minMax"] := 0
     }
+    
     if(oldDockMinMax != dockConfig["minMax"])
     {
         if(dockConfig["minMax"] < 1){
