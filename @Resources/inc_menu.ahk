@@ -108,12 +108,33 @@ taskManage(wParam, lParam)
             clearIconCache()
         }
     }
+    else if(wParam = "Move dock to Top")
+    {
+        IniWrite "top" , iniFile, "Variables", "screenPosition"
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
+    else if(wParam = "Move dock to Left")
+    {
+        IniWrite "left" , iniFile, "Variables", "screenPosition"
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
+    else if(wParam = "Move dock to Right")
+    {
+        IniWrite "right" , iniFile, "Variables", "screenPosition"
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
+    else if(wParam = "Move dock to Bottom")
+    {
+        IniWrite "bottom" , iniFile, "Variables", "screenPosition"
+        SendRainmeterCommand("[!Refresh raindock]")
+    }
 }
 
 OnMessage(16665, "taskItemMenu")
 taskItemMenu(wParam, lParam)
 {
     Global arrayTasks
+    Global dockConfig
     Global selectedTask := wParam
     Global csvPinnedItems
     Global dirPinnedItems
@@ -153,6 +174,22 @@ taskItemMenu(wParam, lParam)
     menuTaskItem.Add  ; Add a separator line.
 
     subMenuDock := MenuCreate()
+    if(dockConfig["position"] != "top")
+    {
+        subMenuDock.Add("Move dock to Top", "taskManage")
+    }
+    if(dockConfig["position"] != "bottom")
+    {
+        subMenuDock.Add("Move dock to Bottom", "taskManage")
+    }
+    if(dockConfig["position"] != "left")
+    {
+        subMenuDock.Add("Move dock to Left", "taskManage")
+    }
+    if(dockConfig["position"] != "right")
+    {
+        subMenuDock.Add("Move dock to Right", "taskManage")
+    }
     subMenuDock.Add "Resize Icon Horizontal Width", "taskManage"
     subMenuDock.Add "Resize Icon Vertical Width", "taskManage"
     subMenuDock.Add "Change Icon Theme", "selectIconTheme"
@@ -168,7 +205,12 @@ taskItemMenu(wParam, lParam)
 clearIconCache()
 {
     Global dirThemeTemp
+    Global dirTemp
     FileDelete dirThemeTemp . "\*.bmp"
+    if(FileExist(dirTemp . "\smallcover.bmp"))
+    {
+        FileDelete dirTemp . "\smallcover.bmp"
+    }
     Sleep 1000
     SendRainmeterCommand("[!Refresh raindock]")
 }

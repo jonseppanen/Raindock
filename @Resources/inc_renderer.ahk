@@ -1,6 +1,25 @@
 renderTooltip(currentTask,taskNumber)
 {
-     SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" raindock][!SetOption iconExe Text `"" . currentTask["exe"] . "`" raindock][!MoveMeter ([#CURRENTSECTION#:X]+(#TaskWidth#/2)+#iconTaskXPadding#) 0 iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
+     global dockConfig
+
+     if(dockConfig["position"] = "bottom")
+     {  
+         labelPosition := "([#CURRENTSECTION#:X]+(#iconWidth#/2)+#iconHorizontalPadding#) ((#iconHeight#+(#iconVerticalPadding#*2))*1.5)"
+     }
+     else if(dockConfig["position"] = "top")
+     {
+         labelPosition := "([#CURRENTSECTION#:X]+(#iconWidth#/2)+#iconHorizontalPadding#) ((#iconHeight#+(#iconVerticalPadding#*2))*3.5)"
+     }
+     else if(dockConfig["position"] = "left")
+     {
+         labelPosition := "((#iconWidth#+(#iconHorizontalPadding#*2))*1.25) ([#CURRENTSECTION#:Y]+(#iconHeight#/2)+#iconVerticalPadding#)"
+     }
+     else
+     {
+         labelPosition := "((#iconWidth#+(#iconHorizontalPadding#*2))*3.75) ([#CURRENTSECTION#:Y]+(#iconHeight#/2)+#iconVerticalPadding#)"
+     }
+     
+     SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" raindock][!SetOption iconExe Text `"" . currentTask["exe"] . "`" raindock][!MoveMeter " . labelPosition . " iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
 }
 
 renderMeter(currentTask,taskNumber)
@@ -9,6 +28,7 @@ renderMeter(currentTask,taskNumber)
     Global dirThemeTemp
     Global iconTheme            
     Global dirCustomIcons
+    Global dockConfig
 
     pinnedTask := 0
     pinnedExt := ""
@@ -26,7 +46,7 @@ renderMeter(currentTask,taskNumber)
         SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
     }
 
-    renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . pinnedExt . ".bmp"
+    renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . "_" . dockConfig["position"] .  pinnedExt . ".bmp"
 
     SendRainmeterCommand("[!SetOption Task" . taskNumber . " RightMouseUpAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16665 " . taskNumber . " 0`"]`"`"`" raindock]")
     SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")

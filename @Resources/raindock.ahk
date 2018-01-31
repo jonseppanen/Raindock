@@ -9,6 +9,9 @@ dirThemeTemp := dirTemp . "\raindock"
 dirUser := EnvGet("USERPROFILE") . "\raindock"
 dirCustomIcons := dirUser . "\customIcons"
 dirPinnedItems := EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+arrayTasks := {}
+ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
+
 iniFile := dirUser . "\raindock.ini"
 iconTheme := {}
 iconTheme["location"] := StrReplace(IniRead(iniFile, "Variables", "ThemePath"), "#@#", A_WorkingDir)
@@ -20,15 +23,38 @@ iconTheme["wFull"] := (iconTheme["w"] + (iconTheme["paddingX"] * 2))
 iconTheme["hFull"] := (iconTheme["h"] + (iconTheme["paddingY"] * 2))
 iconTheme["accentColor"] := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
 dockConfig := {}
-dockConfig["h"] := (iconTheme["h"] + (iconTheme["paddingY"] * 2)) + 95
-dockConfig["y"] := (A_ScreenHeight)
-dockConfig["x"] := ((A_ScreenWidth / 2) - ((iconTheme["w"] + (iconTheme["paddingX"] * 2)) * 2))
+dockConfig["position"] := IniRead(iniFile, "Variables", "screenPosition")
 dockConfig["animating"] := false
 dockConfig["minMax"] := 0
-dockConfig["visible"] := false
-arrayTasks := {}
-ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
-SendRainmeterCommand("[!Move `" " . dockConfig["x"] . " `" `" " . dockConfig["y"] . " `" `"raindock`"]")
+dockConfig["visible"] := true
+dockConfig["animationFrames"] := 300
+dockConfig["dockAnimationMatrix"] := {"left": ["left","right"], "right": ["right", "left"], "top": ["up", "down"], "bottom": ["down", "up"]}
+dockIndicatorRect := {"bottom":"#iconHorizontalPadding#,(#iconWidth# + (#iconVerticalPadding# * 2) - 2),#iconWidth#,2","top":"#iconHorizontalPadding#,0,#iconWidth#,2","left":"0,#iconVerticalPadding#,2,#iconHeight#","right":"(#iconWidth# + (#iconHorizontalPadding# * 2) - 2),#iconVerticalPadding#,2,#iconHeight#"}
+
+if(dockConfig["position"] = "left")
+{
+    dockConfig["edge"] := (iconTheme["wFull"])
+    dockConfig["y"] := ((A_ScreenHeight / 2) - (iconTheme["hFull"] * 5))
+    dockConfig["x"] := 0
+}  
+else if(dockConfig["position"] = "bottom")
+{   
+    dockConfig["edge"] := (iconTheme["hFull"] * 3)
+    dockConfig["y"] := (A_ScreenHeight - dockConfig["edge"])
+    dockConfig["x"] := ((A_ScreenWidth / 2) - (iconTheme["wFull"] * 5))
+}
+else if(dockConfig["position"] = "right")
+{
+    dockConfig["edge"] := (iconTheme["wFull"])
+    dockConfig["y"] := ((A_ScreenHeight / 2) - (iconTheme["hFull"] * 5))
+    dockConfig["x"] := A_ScreenWidth - (iconTheme["wFull"] * 5)
+}  
+else
+{
+    dockConfig["edge"] := (iconTheme["hFull"] * 3)
+    dockConfig["y"] := -(iconTheme["hFull"] * 2)
+    dockConfig["x"] := ((A_ScreenWidth / 2) - (iconTheme["wFull"] * 5))
+}  
 
 #Include inc_lib.ahk
 #Include inc_renderer.ahk
@@ -60,7 +86,7 @@ SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
 
 SetTimerAndFire("getWindows", 300)
 SetTimer("dockStateHandler", 300)
-dockShow()
+;dockShow()
 
 createTaskObject(taskRef, targetArray)
 {
@@ -170,6 +196,7 @@ getWindows()
         if(ActiveIndicatorCheck)
         { 
             SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . ActiveIndicatorCheck . ":X] `" raindock]")
+            SendRainmeterCommand("[!SetOption TaskIndicator Y `"[Task" . ActiveIndicatorCheck . ":Y] `" raindock]")
             SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
         }
         else
@@ -189,7 +216,7 @@ getWindows()
             }
         }
 
-        MoveDock((A_ScreenWidth / 2) - (iconTheme["wFull"] * arrayTasksCheck.length() / 2) - (iconTheme["wFull"] * 2))
+        MoveDock(arrayTasks.length(),arrayTasksCheck.length())
     }
 
     arrayTasks := arrayTasksCheck
