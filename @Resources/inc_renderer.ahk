@@ -1,6 +1,7 @@
 renderTooltip(currentTask,taskNumber)
 {
      global dockConfig
+     Global dirRaindock
 
      if(dockConfig["position"] = "bottom")
      {  
@@ -19,7 +20,7 @@ renderTooltip(currentTask,taskNumber)
          labelPosition := "((#iconWidth#+(#iconHorizontalPadding#*2))*3.75) ([#CURRENTSECTION#:Y]+(#iconHeight#/2)+#iconVerticalPadding#)"
      }
      
-     SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel raindock][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" raindock][!SetOption iconExe Text `"" . currentTask["exe"] . "`" raindock][!MoveMeter " . labelPosition . " iconTitle][!UpdateMeter iconExe raindock][!UpdateMeter iconTitle raindock]`"`"`" raindock]")
+     SendRainmeterCommand("[!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel " . dirRaindock . "][!SetOption iconTitle Text `"    " . currentTask["title"] . "`" " . dirRaindock . "][!SetOption iconExe Text `"" . currentTask["exe"] . "`" " . dirRaindock . "][!MoveMeter " . labelPosition . " iconTitle][!UpdateMeter iconExe " . dirRaindock . "][!UpdateMeter iconTitle " . dirRaindock . "]`"`"`" " . dirRaindock . "]")
 }
 
 renderMeter(currentTask,taskNumber)
@@ -29,27 +30,28 @@ renderMeter(currentTask,taskNumber)
     Global iconTheme            
     Global dirCustomIcons
     Global dockConfig
+    Global dirRaindock
 
     pinnedTask := 0
     pinnedExt := ""
 
     if (currentTask["id"] is "digit") 
     {
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . currentTask["id"] . " 0`"]`"`"`" raindock]")
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+        SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16666 " . currentTask["id"] . " 0`"]`"`"`" " . dirRaindock . "]")
+        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" " . dirRaindock . "]")
     }
     else
     {
         pinnedTask := 1
         pinnedExt := "_pin"
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
-        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" raindock]")
+        SendRainmeterCommand("[!SetOption Task" . taskNumber . " LeftMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" " . dirRaindock . "]")
+        SendRainmeterCommand("[!SetOption Task" . taskNumber . " MiddleMouseDownAction `"`"`"[explorer " . currentTask["fullPath"] . "]`"`"`" " . dirRaindock . "]")
     }
 
     renderedIcon := dirThemeTemp . "\" . currentTask["exe"] . "_" . dockConfig["position"] .  pinnedExt . ".bmp"
 
-    SendRainmeterCommand("[!SetOption Task" . taskNumber . " RightMouseUpAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16665 " . taskNumber . " 0`"]`"`"`" raindock]")
-    SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " raindock]")
+    SendRainmeterCommand("[!SetOption Task" . taskNumber . " RightMouseUpAction `"`"`"[!CommandMeasure MeasureWindowMessage `"SendMessage 16665 " . taskNumber . " 0`"]`"`"`" " . dirRaindock . "]")
+    SendRainmeterCommand("[!ShowMeter Task" . taskNumber . " " . dirRaindock . "]")
 
     if(currentTask["exe"] = arrayMediaPlayer["mediaPlayer"] && arrayMediaPlayer["active"] && currentTask["title"] != arrayMediaPlayer["mediaPlayer"])
     {
@@ -86,12 +88,12 @@ renderMeter(currentTask,taskNumber)
             }
             else{
                 Counter := 1
-                SendRainmeterCommand("[!EnableMeasure MeasureIconExe raindock]")
-                SendRainmeterCommand("[!SetOption MeasureIconExe IconPath `"" .  iconExtracted   . "`" raindock]")
-                SendRainmeterCommand("[!SetOption MeasureIconExe Path `"" . extractExe .  "`" raindock]")
-                SendRainmeterCommand("[!SetOption MeasureIconExe WildcardSearch `"" . currentTask["exe"] .  "." . currentTask["ext"] . "`" raindock]")
-                SendRainmeterCommand("[!UpdateMeasure MeasureIconExe raindock]")
-                SendRainmeterCommand("[!CommandMeasure MeasureIconExe `"Update`" raindock]")
+                SendRainmeterCommand("[!EnableMeasure MeasureIconExe " . dirRaindock . "]")
+                SendRainmeterCommand("[!SetOption MeasureIconExe IconPath `"" .  iconExtracted   . "`" " . dirRaindock . "]")
+                SendRainmeterCommand("[!SetOption MeasureIconExe Path `"" . extractExe .  "`" " . dirRaindock . "]")
+                SendRainmeterCommand("[!SetOption MeasureIconExe WildcardSearch `"" . currentTask["exe"] .  "." . currentTask["ext"] . "`" " . dirRaindock . "]")
+                SendRainmeterCommand("[!UpdateMeasure MeasureIconExe " . dirRaindock . "]")
+                SendRainmeterCommand("[!CommandMeasure MeasureIconExe `"Update`" " . dirRaindock . "]")
                 While(!FileExist( iconExtracted ) && Counter < 200){
                     Sleep 30
                     Counter++
@@ -106,6 +108,6 @@ renderMeter(currentTask,taskNumber)
             }
         }
     }
-    SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . renderedIcon . "`" raindock]")
-    SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " raindock]")
+    SendRainmeterCommand("[!SetOption Task" . taskNumber . " ImageName `"" . renderedIcon . "`" " . dirRaindock . "]")
+    SendRainmeterCommand("[!UpdateMeter Task" . taskNumber . " " . dirRaindock . "]")
 }

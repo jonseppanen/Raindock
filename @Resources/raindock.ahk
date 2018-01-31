@@ -9,6 +9,7 @@ dirThemeTemp := dirTemp . "\raindock"
 dirUser := EnvGet("USERPROFILE") . "\raindock"
 dirCustomIcons := dirUser . "\customIcons"
 dirPinnedItems := EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+dirRaindock := getThisDirName()
 arrayTasks := {}
 ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 
@@ -30,6 +31,13 @@ dockConfig["visible"] := true
 dockConfig["animationFrames"] := 300
 dockConfig["dockAnimationMatrix"] := {"left": ["left","right"], "right": ["right", "left"], "top": ["up", "down"], "bottom": ["down", "up"]}
 dockIndicatorRect := {"bottom":"#iconHorizontalPadding#,(#iconWidth# + (#iconVerticalPadding# * 2) - 2),#iconWidth#,2","top":"#iconHorizontalPadding#,0,#iconWidth#,2","left":"0,#iconVerticalPadding#,2,#iconHeight#","right":"(#iconWidth# + (#iconHorizontalPadding# * 2) - 2),#iconVerticalPadding#,2,#iconHeight#"}
+
+getThisDirName()
+{
+    SplitPath A_ScriptDir , , ResourcesDir
+    SplitPath ResourcesDir , OutFileName2
+    return OutFileName2
+}
 
 if(dockConfig["position"] = "left")
 {
@@ -67,22 +75,22 @@ if(!FileExist(dirUser))
 {
     DirCreate dirUser
     FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini",1)
-    SendRainmeterCommand("[!Refresh raindock]")
+    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
 }
 if(!FileExist(dirCustomIcons))
 {
     DirCreate dirCustomIcons
     FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini", 1)
-    SendRainmeterCommand("[!Refresh raindock]")
+    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
 }
 if(!FileExist(dirThemeTemp))
 {
     DirCreate dirThemeTemp
-    SendRainmeterCommand("[!Refresh raindock]")
+    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
 }
 
-SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " raindock]")
-SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage raindock]")
+SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " " . dirRaindock . "]")
+SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage " . dirRaindock . "]")
 
 SetTimerAndFire("getWindows", 300)
 SetTimer("dockStateHandler", 300)
@@ -122,6 +130,7 @@ getWindows()
     Global arrayTasks
     Global arrayMediaPlayer
     Global ActiveIndicator
+    Global dirRaindock
     ActiveIndicatorCheck := false
     arrayTasksCheck := {}
 
@@ -195,13 +204,13 @@ getWindows()
         ActiveIndicator := ActiveIndicatorCheck
         if(ActiveIndicatorCheck)
         { 
-            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . ActiveIndicatorCheck . ":X] `" raindock]")
-            SendRainmeterCommand("[!SetOption TaskIndicator Y `"[Task" . ActiveIndicatorCheck . ":Y] `" raindock]")
-            SendRainmeterCommand("[!ShowMeter TaskIndicator raindock]")
+            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . ActiveIndicatorCheck . ":X] `" " . dirRaindock . "]")
+            SendRainmeterCommand("[!SetOption TaskIndicator Y `"[Task" . ActiveIndicatorCheck . ":Y] `" " . dirRaindock . "]")
+            SendRainmeterCommand("[!ShowMeter TaskIndicator " . dirRaindock . "]")
         }
         else
         { 
-            SendRainmeterCommand("[!HideMeter TaskIndicator raindock]")
+            SendRainmeterCommand("[!HideMeter TaskIndicator " . dirRaindock . "]")
         }
     }
 
@@ -211,8 +220,8 @@ getWindows()
         {
             Loop (arrayTasks.length() - arrayTasksCheck.length())
             {
-                SendRainmeterCommand("[!SetOption Task" .  (A_Index + arrayTasksCheck.length()) . " ImageName `"`" raindock]")
-                SendRainmeterCommand("[!HideMeter Task" .  (A_Index + arrayTasksCheck.length()) . " raindock]")
+                SendRainmeterCommand("[!SetOption Task" .  (A_Index + arrayTasksCheck.length()) . " ImageName `"`" " . dirRaindock . "]")
+                SendRainmeterCommand("[!HideMeter Task" .  (A_Index + arrayTasksCheck.length()) . " " . dirRaindock . "]")
             }
         }
 

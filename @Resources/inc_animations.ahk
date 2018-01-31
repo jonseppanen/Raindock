@@ -62,6 +62,7 @@ MoveDock(oldTaskN, newTaskN)
 animateDock(animationDistance, animationDirection)
 {
     Global dockConfig
+    Global dirRaindock
 
     dockConfig["animating"] := true
 
@@ -85,7 +86,7 @@ animateDock(animationDistance, animationDirection)
         {
             dockConfig["y"] := dockConfig["y"] + step
         }
-        SendRainmeterCommand("[!Move `" " . dockConfig["x"] . " `" `" " . dockConfig["y"] . " `" `"raindock`"]")
+        SendRainmeterCommand("[!Move `" " . dockConfig["x"] . " `" `" " . dockConfig["y"] . " `" " . dirRaindock . "]")
     }
 
     dockConfig["animating"] := false
