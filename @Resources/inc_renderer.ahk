@@ -5,11 +5,11 @@ renderTooltip(currentTask,taskNumber)
 
      if(dockConfig["position"] = "bottom")
      {  
-         labelPosition := "([#CURRENTSECTION#:X]+(#iconWidth#/2)+#iconHorizontalPadding#) ((#iconHeight#+(#iconVerticalPadding#*2))*1.5)"
+         labelPosition := "([#CURRENTSECTION#:X]+(#iconWidth#/2)+#iconHorizontalPadding#) ((#iconHeight#+(#iconVerticalPadding#*2))*3.5)"
      }
      else if(dockConfig["position"] = "top")
      {
-         labelPosition := "([#CURRENTSECTION#:X]+(#iconWidth#/2)+#iconHorizontalPadding#) ((#iconHeight#+(#iconVerticalPadding#*2))*3.5)"
+         labelPosition := "([#CURRENTSECTION#:X]+(#iconWidth#/2)+#iconHorizontalPadding#) ((#iconHeight#+(#iconVerticalPadding#*2))*1.5)"
      }
      else if(dockConfig["position"] = "left")
      {

@@ -42,27 +42,35 @@ getThisDirName()
 if(dockConfig["position"] = "left")
 {
     dockConfig["edge"] := (iconTheme["wFull"])
+    dockConfig["axis"] := (iconTheme["hFull"])
     dockConfig["y"] := ((A_ScreenHeight / 2) - (iconTheme["hFull"] * 5))
     dockConfig["x"] := 0
 }  
 else if(dockConfig["position"] = "bottom")
 {   
-    dockConfig["edge"] := (iconTheme["hFull"] * 3)
-    dockConfig["y"] := (A_ScreenHeight - dockConfig["edge"])
+    dockConfig["edge"] := (iconTheme["hFull"])
+    dockConfig["axis"] := (iconTheme["wFull"])
+    dockConfig["y"] := (A_ScreenHeight - (iconTheme["hFull"] * 5))
     dockConfig["x"] := ((A_ScreenWidth / 2) - (iconTheme["wFull"] * 5))
 }
 else if(dockConfig["position"] = "right")
 {
     dockConfig["edge"] := (iconTheme["wFull"])
+    dockConfig["axis"] := (iconTheme["hFull"])
     dockConfig["y"] := ((A_ScreenHeight / 2) - (iconTheme["hFull"] * 5))
     dockConfig["x"] := A_ScreenWidth - (iconTheme["wFull"] * 5)
 }  
 else
 {
-    dockConfig["edge"] := (iconTheme["hFull"] * 3)
-    dockConfig["y"] := -(iconTheme["hFull"] * 2)
+    dockConfig["edge"] := (iconTheme["hFull"])
+    dockConfig["axis"] := (iconTheme["wFull"])
+    dockConfig["y"] := -(iconTheme["hFull"] * 0)
     dockConfig["x"] := ((A_ScreenWidth / 2) - (iconTheme["wFull"] * 5))
 }  
+
+;SendRainmeterCommand("[!SetVariable dockXPos " . dockConfig["x"] . " " . dirRaindock . "]")
+;SendRainmeterCommand("[!SetVariable dockYPos " . dockConfig["y"] . " " . dirRaindock . "]")
+SendRainmeterCommand("[!Move " . dockConfig["x"] . " " . dockConfig["y"] . " " . dirRaindock . "]")
 
 #Include inc_lib.ahk
 #Include inc_renderer.ahk
@@ -224,8 +232,8 @@ getWindows()
                 SendRainmeterCommand("[!HideMeter Task" .  (A_Index + arrayTasksCheck.length()) . " " . dirRaindock . "]")
             }
         }
-
-        MoveDock(arrayTasks.length(),arrayTasksCheck.length())
+        ShiftDock(arrayTasks.length(),arrayTasksCheck.length())
+        ;MoveDock((((arrayTasks.length() - arrayTasksCheck.length()) * dockConfig["axis"]) / 2),0)
     }
 
     arrayTasks := arrayTasksCheck
