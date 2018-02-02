@@ -29,7 +29,6 @@ dockConfig["animating"] := false
 dockConfig["minMax"] := 0
 dockConfig["visible"] := true
 dockConfig["animationFrames"] := 300
-dockConfig["dockAnimationMatrix"] := {"left": ["left","right"], "right": ["right", "left"], "top": ["up", "down"], "bottom": ["down", "up"]}
 dockIndicatorRect := {"bottom":"#iconHorizontalPadding#,(#iconWidth# + (#iconVerticalPadding# * 2) - 2),#iconWidth#,2","top":"#iconHorizontalPadding#,0,#iconWidth#,2","left":"0,#iconVerticalPadding#,2,#iconHeight#","right":"(#iconWidth# + (#iconHorizontalPadding# * 2) - 2),#iconVerticalPadding#,2,#iconHeight#"}
 
 getThisDirName()
@@ -68,9 +67,9 @@ else
     dockConfig["x"] := ((A_ScreenWidth / 2) - (iconTheme["wFull"] * 5))
 }  
 
-;SendRainmeterCommand("[!SetVariable dockXPos " . dockConfig["x"] . " " . dirRaindock . "]")
-;SendRainmeterCommand("[!SetVariable dockYPos " . dockConfig["y"] . " " . dirRaindock . "]")
-SendRainmeterCommand("[!Move " . dockConfig["x"] . " " . dockConfig["y"] . " " . dirRaindock . "]")
+;SendRainmeterCommand("!SetVariable dockXPos " . dockConfig["x"] . " ")
+;SendRainmeterCommand("!SetVariable dockYPos " . dockConfig["y"] . " ")
+SendRainmeterCommand("!Move " . dockConfig["x"] . " " . dockConfig["y"] . " ")
 
 #Include inc_lib.ahk
 #Include inc_renderer.ahk
@@ -83,22 +82,22 @@ if(!FileExist(dirUser))
 {
     DirCreate dirUser
     FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini",1)
-    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+    SendRainmeterCommand("!Refresh ")
 }
 if(!FileExist(dirCustomIcons))
 {
     DirCreate dirCustomIcons
     FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini", 1)
-    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+    SendRainmeterCommand("!Refresh ")
 }
 if(!FileExist(dirThemeTemp))
 {
     DirCreate dirThemeTemp
-    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+    SendRainmeterCommand("!Refresh ")
 }
 
-SendRainmeterCommand("[!SetVariable AHKVersion " . A_AhkVersion . " " . dirRaindock . "]")
-SendRainmeterCommand("[!UpdateMeasure MeasureWindowMessage " . dirRaindock . "]")
+SendRainmeterCommand("!SetVariable AHKVersion " . A_AhkVersion . " ")
+SendRainmeterCommand("!UpdateMeasure MeasureWindowMessage ")
 
 SetTimerAndFire("getWindows", 300)
 SetTimer("dockStateHandler", 300)
@@ -212,13 +211,13 @@ getWindows()
         ActiveIndicator := ActiveIndicatorCheck
         if(ActiveIndicatorCheck)
         { 
-            SendRainmeterCommand("[!SetOption TaskIndicator X `"[Task" . ActiveIndicatorCheck . ":X] `" " . dirRaindock . "]")
-            SendRainmeterCommand("[!SetOption TaskIndicator Y `"[Task" . ActiveIndicatorCheck . ":Y] `" " . dirRaindock . "]")
-            SendRainmeterCommand("[!ShowMeter TaskIndicator " . dirRaindock . "]")
+            SendRainmeterCommand("!SetOption TaskIndicator X `"[Task" . ActiveIndicatorCheck . ":X] `" ")
+            SendRainmeterCommand("!SetOption TaskIndicator Y `"[Task" . ActiveIndicatorCheck . ":Y] `" ")
+            SendRainmeterCommand("!ShowMeter TaskIndicator ")
         }
         else
         { 
-            SendRainmeterCommand("[!HideMeter TaskIndicator " . dirRaindock . "]")
+            SendRainmeterCommand("!HideMeter TaskIndicator ")
         }
     }
 
@@ -228,12 +227,11 @@ getWindows()
         {
             Loop (arrayTasks.length() - arrayTasksCheck.length())
             {
-                SendRainmeterCommand("[!SetOption Task" .  (A_Index + arrayTasksCheck.length()) . " ImageName `"`" " . dirRaindock . "]")
-                SendRainmeterCommand("[!HideMeter Task" .  (A_Index + arrayTasksCheck.length()) . " " . dirRaindock . "]")
+                SendRainmeterCommand("!SetOption Task" .  (A_Index + arrayTasksCheck.length()) . " ImageName `"`" ")
+                SendRainmeterCommand("!HideMeter Task" .  (A_Index + arrayTasksCheck.length()) . " ")
             }
         }
         ShiftDock(arrayTasks.length(),arrayTasksCheck.length())
-        ;MoveDock((((arrayTasks.length() - arrayTasksCheck.length()) * dockConfig["axis"]) / 2),0)
     }
 
     arrayTasks := arrayTasksCheck

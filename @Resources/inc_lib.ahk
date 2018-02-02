@@ -25,7 +25,11 @@ IsWindowCloaked(hwnd)
 
 SendRainmeterCommand(command)
 {
-    if(Send_WM_COPYDATA(command, "ahk_class RainmeterMeterWindow") = 1){
+    Global dirRaindock
+    
+    commandWrap :=  "[" . command . " " . dirRaindock . "]"
+    
+    if(Send_WM_COPYDATA(commandWrap, "ahk_class RainmeterMeterWindow") = 1){
         ExitApp
     }
 }

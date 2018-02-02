@@ -6,7 +6,6 @@ taskManage(wParam, lParam)
     Global dirPinnedItems
     Global dirCustomIcons
     Global dirThemeTemp
-    Global dirRaindock
     Global iniFile
 
     if(wParam = "minimize")
@@ -62,7 +61,7 @@ taskManage(wParam, lParam)
         {
             FileDelete filePinIcon
         }
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
     else if(wParam = "restore original")
     {   
@@ -81,15 +80,15 @@ taskManage(wParam, lParam)
         {
             FileDelete customFileIcon
         }
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
     else if(wParam = "refresh dock")
     {
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
     else if(wParam = "Rainmeter Menu")
     {
-        SendRainmeterCommand("[!Skinmenu " . dirRaindock . "]")
+        SendRainmeterCommand("!Skinmenu ")
     }
     else if(wParam = "Resize Icon Horizontal Width")
     {
@@ -112,22 +111,22 @@ taskManage(wParam, lParam)
     else if(wParam = "Move dock to Top")
     {
         IniWrite "top" , iniFile, "Variables", "screenPosition"
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
     else if(wParam = "Move dock to Left")
     {
         IniWrite "left" , iniFile, "Variables", "screenPosition"
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
     else if(wParam = "Move dock to Right")
     {
         IniWrite "right" , iniFile, "Variables", "screenPosition"
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
     else if(wParam = "Move dock to Bottom")
     {
         IniWrite "bottom" , iniFile, "Variables", "screenPosition"
-        SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+        SendRainmeterCommand("!Refresh ")
     }
 }
 
@@ -207,14 +206,13 @@ clearIconCache()
 {
     Global dirThemeTemp
     Global dirTemp
-    Global dirRaindock
     FileDelete dirThemeTemp . "\*.bmp"
     if(FileExist(dirTemp . "\smallcover.bmp"))
     {
         FileDelete dirTemp . "\smallcover.bmp"
     }
     Sleep 1000
-    SendRainmeterCommand("[!Refresh " . dirRaindock . "]")
+    SendRainmeterCommand("!Refresh ")
 }
 
 selectIconTheme()

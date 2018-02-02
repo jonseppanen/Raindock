@@ -24,18 +24,17 @@ renderMediaPlayerIcon()
     Global iconTheme
     Global dockConfig
     Global dockIndicatorRect
-    Global dirRaindock
 
     currentAlbum := FileGetTime(arrayMediaPlayer["sourceCover"], C)
 
     if(arrayMediaPlayer["lastAlbum"] != currentAlbum )
     {
         arrayMediaPlayer["lastAlbum"] := currentAlbum
-        SendRainmeterCommand("[!SetOption magickmeter1 ExportTo `"" . arrayMediaPlayer["renderedCover"] . "`" " . dirRaindock . "]")
-        SendRainmeterCommand("[!SetOption magickmeter1 Image `"Rectangle 0,0,(#iconWidth# + (#iconHorizontalPadding# * 2)),(#iconHeight# + (#iconVerticalPadding# * 2) + 10)  | Color 255,255,255,1  `" " . dirRaindock . "]")
-        SendRainmeterCommand("[!SetOption magickmeter1 Image2 `"File " . arrayMediaPlayer["sourceCover"] . " | RenderSize #iconWidth#,#iconHeight# | Move #iconHorizontalPadding#,#iconVerticalPadding# | Perspective *,*,(#iconWidth#),15,(#iconWidth#),(#iconHeight#),*,*`" " . dirRaindock . "]")
-        SendRainmeterCommand("[!SetOption magickmeter1 Image3 `"File " . iconTheme["location"] . "\" . arrayMediaPlayer["mediaPlayer"] . ".png | RenderSize (#iconWidth#/2),(#iconHeight#/2) | move ((#iconWidth#/2) + #iconHorizontalPadding#) ,((#iconHeight#/2) + #iconVerticalPadding#)`" " . dirRaindock . "]")
-        SendRainmeterCommand("[!SetOption magickmeter1 Image4 `"Rectangle " . dockIndicatorRect[dockConfig["position"]] . "  | ignore " . pinnedTask . "| Color 200,200,200,170`" " . dirRaindock . "]")
-        SendRainmeterCommand("[!UpdateMeasure magickmeter1 " . dirRaindock . "]") 
+        SendRainmeterCommand("!SetOption magickmeter1 ExportTo `"" . arrayMediaPlayer["renderedCover"] . "`" ")
+        SendRainmeterCommand("!SetOption magickmeter1 Image `"Rectangle 0,0,(#iconWidth# + (#iconHorizontalPadding# * 2)),(#iconHeight# + (#iconVerticalPadding# * 2) + 10)  | Color 255,255,255,1  `" ")
+        SendRainmeterCommand("!SetOption magickmeter1 Image2 `"File " . arrayMediaPlayer["sourceCover"] . " | RenderSize #iconWidth#,#iconHeight# | Move #iconHorizontalPadding#,#iconVerticalPadding# | Perspective *,*,(#iconWidth#),15,(#iconWidth#),(#iconHeight#),*,*`" ")
+        SendRainmeterCommand("!SetOption magickmeter1 Image3 `"File " . iconTheme["location"] . "\" . arrayMediaPlayer["mediaPlayer"] . ".png | RenderSize (#iconWidth#/2),(#iconHeight#/2) | move ((#iconWidth#/2) + #iconHorizontalPadding#) ,((#iconHeight#/2) + #iconVerticalPadding#)`" ")
+        SendRainmeterCommand("!SetOption magickmeter1 Image4 `"Rectangle " . dockIndicatorRect[dockConfig["position"]] . "  | ignore " . pinnedTask . "| Color 200,200,200,170`" ")
+        SendRainmeterCommand("!UpdateMeasure magickmeter1 ") 
     }
 }

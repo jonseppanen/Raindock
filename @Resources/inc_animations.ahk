@@ -2,8 +2,6 @@ OnMessage(16671, "dockHide")
 dockHide()
 {
     Global dockConfig
-    Global iconTheme
-    Global dirRaindock
 
     if(dockConfig["visible"] = false || dockConfig["minMax"] = 0)
     {
@@ -11,32 +9,13 @@ dockHide()
     }
     dockConfig["visible"] := false
 
-    if(dockConfig["position"] = "bottom" || dockConfig["position"] = "right" )
-    {
-        dockEdge := dockConfig["edge"]
-        
-    }   
-    else
-    {
-        dockEdge := (-dockConfig["edge"])
-    }
-
-    if(dockConfig["position"] = "bottom" || dockConfig["position"] = "top" )
-    {
-        MoveDock(0,dockEdge)
-    }
-    else
-    {
-        MoveDock(dockEdge,0)
-    }   
-    
+    matrix := {"bottom":[0,dockConfig["edge"]],"right":[0,dockConfig["edge"]],"top":[0,-dockConfig["edge"]],"left":[-dockConfig["edge"],0]}
+    MoveDock(matrix[dockConfig["position"]][1],matrix[dockConfig["position"]][2])    
 }
 
 dockShow()
 {
     Global dockConfig
-    Global dirRaindock
-    Global iconTheme
     
     if(dockConfig["visible"] = true || dockConfig["minMax"] = 2)
     {
@@ -44,30 +23,14 @@ dockShow()
     }
     dockConfig["visible"] := true
 
-    if(dockConfig["position"] = "bottom" || dockConfig["position"] = "right" )
-    {
-        dockEdge := (-dockConfig["edge"])
-    }   
-    else
-    {
-        dockEdge := dockConfig["edge"]
-    }
-
-    if(dockConfig["position"] = "bottom" || dockConfig["position"] = "top" )
-    {
-        MoveDock(0,dockEdge)
-    }
-    else
-    {
-        MoveDock(dockEdge,0)
-    }    
+    matrix := {"bottom":[0,-dockConfig["edge"]],"right":[0,-dockConfig["edge"]],"top":[0,dockConfig["edge"]],"left":[dockConfig["edge"],0]}
+    MoveDock(matrix[dockConfig["position"]][1],matrix[dockConfig["position"]][2])  
 }
 
 
 ShiftDock(oldTaskN, newTaskN)
 {
     Global dockConfig
-    Global iconTheme
 
     if(dockConfig["position"] = "bottom" || dockConfig["position"] = "top")
     {
@@ -88,16 +51,14 @@ MoveDock(moveX, moveY)
         sleep 13
     }
     dockConfig["animating"] = true 
-    Global iconTheme
-    Global dirRaindock
     dockConfig["x"] := dockConfig["x"] + moveX
     dockConfig["y"] := dockConfig["y"] + moveY
 
-    SendRainmeterCommand("[!SetOption MeasureAnimator AnimatorFinish `"[!Move " . (dockConfig["x"]) . " " . (dockConfig["y"]) . "][!UpdateMeasure MeasureAnimator]`" " . dirRaindock . "]")
-    SendRainmeterCommand("[!SetOption MeasureAnimator animatorMove `"`"`"[!Move `"(#CURRENTCONFIGX# + " . (moveX / 10) . ")`" `"(#CURRENTCONFIGY# + " . (moveY / 10) . ")`"][!UpdateMeasure MeasureAnimator]`"`"`" " . dirRaindock . "]")
-    SendRainmeterCommand("[!SetOption MeasureAnimator ActionList1 `"Repeat animatorMove,10,10 | Wait 10 | animatorFinish `" " . dirRaindock . "]")
-    SendRainmeterCommand("[!UpdateMeasure MeasureAnimator " . dirRaindock . "]")
-    SendRainmeterCommand("[!CommandMeasure MeasureAnimator `"Execute 1`" " . dirRaindock . "]")
+    SendRainmeterCommand("!SetOption MeasureAnimator AnimatorFinish `"[!Move " . (dockConfig["x"]) . " " . (dockConfig["y"]) . "][!UpdateMeasure MeasureAnimator]`" ")
+    SendRainmeterCommand("!SetOption MeasureAnimator animatorMove `"`"`"[!Move `"(#CURRENTCONFIGX# + " . (moveX / 10) . ")`" `"(#CURRENTCONFIGY# + " . (moveY / 10) . ")`"][!UpdateMeasure MeasureAnimator]`"`"`" ")
+    SendRainmeterCommand("!SetOption MeasureAnimator ActionList1 `"Repeat animatorMove,10,10 | Wait 10 | animatorFinish `" ")
+    SendRainmeterCommand("!UpdateMeasure MeasureAnimator ")
+    SendRainmeterCommand("!CommandMeasure MeasureAnimator `"Execute 1`" ")
     sleep 110
     dockConfig["animating"] = false 
 }
@@ -105,7 +66,6 @@ MoveDock(moveX, moveY)
 dockStateHandler()
 {
     Global dockConfig
-    Global iconTheme
     Global oldDockMinMax := dockConfig["minMax"]
     MouseGetPos xpos, ypos 
     WinGetPos(,,CurrentWinWidth, CurrentWinHeight,"A")
