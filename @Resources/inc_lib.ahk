@@ -45,7 +45,6 @@ Send_WM_COPYDATA(ByRef StringToSend, ByRef TargetWindowClass)
     return ErrorLevel  
 }
 
-OnMessage(16666, "taskSwitch")
 taskSwitch(wParam, lParam)
 { 
     Global ActiveHwnd
@@ -95,9 +94,6 @@ getArraysIdentical(firstArray,SecondArray)
     return true
 }
 
-csvPinnedItems := ""
-
-SetTimerAndFire("getPinnedTaskbarIcons", 3000)
 getPinnedTaskbarIcons()
 {
     Global dirPinnedItems
@@ -137,3 +133,79 @@ AutoSort(Arr)
     return Arr
 }
 
+getThisDirName()
+{
+    SplitPath A_ScriptDir , , ResourcesDir
+    SplitPath ResourcesDir , OutFileName2
+    return OutFileName2
+}
+
+checkIniFile()
+{
+    Global dirUser
+    Global dirCustomIcons
+    Global dirThemeTemp
+    Global iniFile
+    Global iconTheme
+    Global dockConfig
+    Global arrayMediaPlayer
+    iniCheck := true
+    
+    if(!FileExist(dirUser))
+    {
+        DirCreate dirUser
+        FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini",1)
+        iniCheck := false
+    }
+    if(!FileExist(dirCustomIcons))
+    {
+        DirCreate dirCustomIcons
+        iniCheck := false
+    }
+    if(!FileExist(dirThemeTemp))
+    {
+        DirCreate dirThemeTemp
+        iniCheck := false
+    }
+
+    if(!iconTheme["location"])
+    {
+        IniWrite(A_WorkingDir . "\Loglyphs",iniFile, "Variables", "ThemePath")
+        iniCheck := false
+    }
+
+    if(!iconTheme["w"])
+    {
+        IniWrite(96,iniFile, "Variables", "iconWidth")
+        iniCheck := false
+    }
+    if(!iconTheme["h"])
+    {
+        IniWrite(96,iniFile, "Variables", "iconHeight")
+        iniCheck := false
+    }
+
+    if(!iconTheme["paddingX"])
+    {
+        IniWrite(12,iniFile, "Variables", "iconHorizontalPadding")
+        iniCheck := false
+    }
+
+    if(!iconTheme["paddingY"])
+    {
+        IniWrite(10,iniFile, "Variables", "iconVerticalPadding")
+        iniCheck := false
+    }
+
+    if(!dockConfig["position"])
+    {
+        IniWrite("bottom",iniFile, "Variables", "screenPosition")
+        iniCheck := false
+    }
+
+    if(iniCheck = false)
+    {
+        SendRainmeterCommand("!Refresh ")
+    }
+
+}

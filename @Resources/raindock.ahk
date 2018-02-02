@@ -11,32 +11,30 @@ dirCustomIcons := dirUser . "\customIcons"
 dirPinnedItems := EnvGet("USERPROFILE") . "\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 dirRaindock := getThisDirName()
 arrayTasks := {}
+csvPinnedItems := ""
 ActiveHwnd := WinExist("A",,RainmeterMeterWindow)
 
 iniFile := dirUser . "\raindock.ini"
 iconTheme := {}
+dockConfig := {}
 iconTheme["location"] := StrReplace(IniRead(iniFile, "Variables", "ThemePath"), "#@#", A_WorkingDir)
 iconTheme["w"] := IniRead(iniFile, "Variables", "iconWidth")
 iconTheme["h"] := IniRead(iniFile, "Variables", "iconHeight")
 iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconHorizontalPadding")
 iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconVerticalPadding")
+dockConfig["position"] := IniRead(iniFile, "Variables", "screenPosition")
+checkIniFile()
+
 iconTheme["wFull"] := (iconTheme["w"] + (iconTheme["paddingX"] * 2))
 iconTheme["hFull"] := (iconTheme["h"] + (iconTheme["paddingY"] * 2))
 iconTheme["accentColor"] := SubStr(Format("{1:#x}", RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor")), 3, 6) . "FF"
-dockConfig := {}
-dockConfig["position"] := IniRead(iniFile, "Variables", "screenPosition")
 dockConfig["animating"] := false
 dockConfig["minMax"] := 0
 dockConfig["visible"] := true
 dockConfig["animationFrames"] := 300
 dockIndicatorRect := {"bottom":"#iconHorizontalPadding#,(#iconWidth# + (#iconVerticalPadding# * 2) - 2),#iconWidth#,2","top":"#iconHorizontalPadding#,0,#iconWidth#,2","left":"0,#iconVerticalPadding#,2,#iconHeight#","right":"(#iconWidth# + (#iconHorizontalPadding# * 2) - 2),#iconVerticalPadding#,2,#iconHeight#"}
 
-getThisDirName()
-{
-    SplitPath A_ScriptDir , , ResourcesDir
-    SplitPath ResourcesDir , OutFileName2
-    return OutFileName2
-}
+
 
 if(dockConfig["position"] = "left")
 {
@@ -78,30 +76,14 @@ SendRainmeterCommand("!Move " . dockConfig["x"] . " " . dockConfig["y"] . " ")
 #Include inc_magickmeter.ahk
 #Include inc_mediaplayer.ahk
 
-if(!FileExist(dirUser))
-{
-    DirCreate dirUser
-    FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini",1)
-    SendRainmeterCommand("!Refresh ")
-}
-if(!FileExist(dirCustomIcons))
-{
-    DirCreate dirCustomIcons
-    FileCopy(A_WorkingDir . "\default.ini", dirUser . "\raindock.ini", 1)
-    SendRainmeterCommand("!Refresh ")
-}
-if(!FileExist(dirThemeTemp))
-{
-    DirCreate dirThemeTemp
-    SendRainmeterCommand("!Refresh ")
-}
-
 SendRainmeterCommand("!SetVariable AHKVersion " . A_AhkVersion . " ")
-SendRainmeterCommand("!UpdateMeasure MeasureWindowMessage ")
+SendRainmeterCommand("!UpdateMeasure MeasureWindowMessage")
 
+OnMessage(16666, "taskSwitch")
+SetTimerAndFire("getPinnedTaskbarIcons", 3000)
 SetTimerAndFire("getWindows", 300)
 SetTimer("dockStateHandler", 300)
-;dockShow()
+
 
 createTaskObject(taskRef, targetArray)
 {

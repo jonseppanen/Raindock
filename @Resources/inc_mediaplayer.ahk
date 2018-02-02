@@ -1,15 +1,30 @@
 arrayMediaPlayer := []
-
-arrayMediaPlayer["sourceCover"] := IniRead(iniFile, "Variables", "fileCoverArt")
 arrayMediaPlayer["mediaPlayer"] := IniRead(iniFile, "Variables", "mediaPlayer")
+arrayMediaPlayer["sourceCover"] := IniRead(iniFile, "Variables", "fileCoverArt")
+arrayMediaPlayer["active"] := False
+mediaCheck := true
+if(!arrayMediaPlayer["mediaPlayer"])
+{
+    IniWrite("spotify",iniFile, "Variables", "mediaPlayer")
+    mediaCheck := false
+}
+
+if(!arrayMediaPlayer["sourceCover"])
+{
+    IniWrite("default",iniFile, "Variables", "fileCoverArt")
+    mediaCheck := false
+}
+
+if(mediaCheck = false)
+{
+    SendRainmeterCommand("!Refresh ")
+}
+
 
 if(arrayMediaPlayer["sourceCover"] = "default")
 {
     arrayMediaPlayer["sourceCover"] :=  dirTemp . "\cover.bmp"
 }
-
-arrayMediaPlayer["active"] := False
-
 if(FileExist(arrayMediaPlayer["sourceCover"]))
 {
     arrayMediaPlayer["active"] := True
