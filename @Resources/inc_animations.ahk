@@ -9,7 +9,7 @@ dockHide()
     }
     dockConfig["visible"] := false
 
-    matrix := {"bottom":[0,dockConfig["edge"]],"right":[0,dockConfig["edge"]],"top":[0,-dockConfig["edge"]],"left":[-dockConfig["edge"],0]}
+    matrix := {"bottom":[0,dockConfig["edge"]],"right":[dockConfig["edge"],0],"top":[0,-dockConfig["edge"]],"left":[-dockConfig["edge"],0]}
     MoveDock(matrix[dockConfig["position"]][1],matrix[dockConfig["position"]][2])    
 }
 
@@ -23,7 +23,7 @@ dockShow()
     }
     dockConfig["visible"] := true
 
-    matrix := {"bottom":[0,-dockConfig["edge"]],"right":[0,-dockConfig["edge"]],"top":[0,dockConfig["edge"]],"left":[dockConfig["edge"],0]}
+    matrix := {"bottom":[0,-dockConfig["edge"]],"right":[-dockConfig["edge"],0],"top":[0,dockConfig["edge"]],"left":[dockConfig["edge"],0]}
     MoveDock(matrix[dockConfig["position"]][1],matrix[dockConfig["position"]][2])  
 }
 
