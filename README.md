@@ -8,10 +8,19 @@ It uses **autohotkey v2** as the logical backend and task scraper, and **rainmet
 
 ## Requirements
 
-* [MagickMeter](https://github.com/khanhas/MagickMeter) plugin by @khanhas. Make sure that is installed properly and restart rainmeter.
+* If you don't have imagemagick installed, it will automatically download when you load the dock. Run the installer and **Quit and restart rainmeter**
 * I advise using my other theme [WWing](https://github.com/jonseppanen/wwing) with this theme, as it goes nicely together.
 
 ## Features
+
+### Place dock on any side of the screen
+
+Added in version 0.2.0
+
+### Change autohide settings between smart, never, and always
+
+This allows for your dock to always hide, never hide, or only hide when you are working with a maximized app. 
+Docks will always hide for a fullscreen app.
 
 ### Custom config per user
 
@@ -38,10 +47,6 @@ Might not seem like a big deal, but your pinned taskbar items will be loaded in 
 ### Automatic Icon Generation
 
 If you don't have a matching image file, the largest ico file for the exe will be loaded. If it is a metro app, the initials of the app will load. Because there is no standard for their icons.
-
-### Smart Hide
-
-Like Plank on linux, if you have a maximized app open, the dock will auto hide. If not, the dock will unhide.
 
 ## Coming Soon...
 
