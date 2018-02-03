@@ -96,7 +96,7 @@ taskManage(wParam, lParam)
         if(UserInput)
         {
             IniWrite UserInput , iniFile, "Variables", "iconWidth"
-            clearIconCache()
+            SendRainmeterCommand("!Refresh ")
         }
     }
     else if(wParam = "Resize Icon Vertical Width")
@@ -105,7 +105,7 @@ taskManage(wParam, lParam)
         if(UserInput)
         {
             IniWrite UserInput , iniFile, "Variables", "iconHeight"
-            clearIconCache()
+            SendRainmeterCommand("!Refresh ")
         }
     }
     else if(wParam = "Move dock to Top")

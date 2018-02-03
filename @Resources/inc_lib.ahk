@@ -176,12 +176,12 @@ checkIniFile()
 
     if(!iconTheme["w"])
     {
-        IniWrite(96,iniFile, "Variables", "iconWidth")
+        IniWrite(64,iniFile, "Variables", "iconWidth")
         iniCheck := false
     }
     if(!iconTheme["h"])
     {
-        IniWrite(96,iniFile, "Variables", "iconHeight")
+        IniWrite(64,iniFile, "Variables", "iconHeight")
         iniCheck := false
     }
 

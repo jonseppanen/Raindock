@@ -65,8 +65,6 @@ else
     dockConfig["x"] := ((A_ScreenWidth / 2) - (iconTheme["wFull"] * 5))
 }  
 
-;SendRainmeterCommand("!SetVariable dockXPos " . dockConfig["x"] . " ")
-;SendRainmeterCommand("!SetVariable dockYPos " . dockConfig["y"] . " ")
 SendRainmeterCommand("!Move " . dockConfig["x"] . " " . dockConfig["y"] . " ")
 
 #Include inc_lib.ahk
@@ -91,9 +89,25 @@ createTaskObject(taskRef, targetArray)
     {
         fullPath := WinGetProcessPath("ahk_id " A_LoopField)
         SplitPath fullPath , OutFileName, OutDir, OutExtension, OutNameNoExt
+
         targetArray[A_Index,"id"] := A_LoopField
         targetArray[A_Index,"classname"] := WinGetClass("ahk_id " A_LoopField)
         targetArray[A_Index,"title"] := WinGetTitle("ahk_id " A_LoopField)
+
+        if(OutNameNoExt = "ApplicationFrameHost")
+        {
+            TitleArray := StrSplit(targetArray[A_Index,"title"], "- ") 
+            Initials := TitleArray[TitleArray.length()]
+            OutNameNoExt := Initials
+            Loop Parse, Initials, A_Space
+            {
+                x := x SubStr(A_LoopField, "1", "1")
+                x := StrUpper(x)
+                Initials := x
+            }
+            Initials := StrReplace(Initials, "[", "")
+            targetArray[A_Index,"initials"] := Initials
+        }
     }
     else
     {
@@ -185,9 +199,7 @@ getWindows()
             ActiveIndicatorCheck := TaskId
         }
     }
-
     
-
     if(ActiveIndicatorCheck != ActiveIndicator)
     { 
         ActiveIndicator := ActiveIndicatorCheck

@@ -20,7 +20,14 @@ renderTooltip(currentTask,taskNumber)
          labelPosition := "((#iconWidth#+(#iconHorizontalPadding#*2))*3.75) ([#CURRENTSECTION#:Y]+(#iconHeight#/2)+#iconVerticalPadding#)"
      }
      
-     SendRainmeterCommand("!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel][!SetOption iconTitle Text `"    " . currentTask["title"] . "`"][!SetOption iconExe Text `"" . currentTask["exe"] . "`"][!MoveMeter " . labelPosition . " iconTitle][!UpdateMeter iconExe][!UpdateMeter iconTitle]`"`"`" ")
+    exeSwitch := "[!SetOption iconExe Text `"" . currentTask["exe"]  . "`"][!SetOption iconTitle padding 0,5,20,30]"
+
+    if(currentTask["exe"] = currentTask["title"])
+    {
+        exeSwitch := "[!SetOption iconExe Text `"`"][!SetOption iconTitle padding 0,17,20,18]"
+    }
+
+     SendRainmeterCommand("!SetOption Task" . taskNumber . " MouseOverAction `"`"`"[!ShowMeterGroup groupIconLabel][!SetOption iconTitle Text `"    " . currentTask["title"] . "`"]" . exeSwitch . "[!MoveMeter " . labelPosition . " iconTitle][!UpdateMeter iconExe][!UpdateMeter iconTitle]`"`"`" ")
 }
 
 renderMeter(currentTask,taskNumber)
@@ -72,18 +79,10 @@ renderMeter(currentTask,taskNumber)
         {
             iconExtracted :=  dirThemeTemp . "\" . currentTask["exe"] . ".ico"
             extractExe := currentTask["path"]
-            Initials := currentTask["exe"]
-            Loop Parse, Initials, A_Space
-            {
-                x := x SubStr(A_LoopField, "1", "1")
-                x := StrUpper(x)
-                Initials := x
-            }
-            Initials := StrReplace(Initials, "[", "")
 
             if(currentTask["classname"] = "ApplicationFrameWindow")
             {
-                renderIconTheme("255,255,255,255",renderedIcon,pinnedTask,Initials)
+                renderIconTheme("255,255,255,255",renderedIcon,pinnedTask,currentTask["initials"])
             }
             else{
                 Counter := 1

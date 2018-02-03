@@ -14,7 +14,7 @@ renderIconTheme(iconFile,renderTo,pinnedTask := 0,string := ""){
     else
     {                           
         Global iconTheme
-        SendRainmeterCommand("!SetOption magickmeter1 Image2 `"Ellipse ((#iconWidth# + (#iconHorizontalPadding# * 2)) / 2),((#iconHeight# + (#iconVerticalPadding# * 2)) / 2),(#iconWidth# / 2) | Color " . iconTheme["accentColor"] . "`" ")
+        SendRainmeterCommand("!SetOption magickmeter1 Image2 `"Ellipse ((#iconWidth# + (#iconHorizontalPadding# * 2))),((#iconHeight# + (#iconVerticalPadding# * 2))),(#iconWidth#),(#iconHeight#) | StrokeWidth 2 | StrokeColor 255,255,255,1 | Color " . iconTheme["accentColor"] . " | Resize ((#iconWidth# + (#iconHorizontalPadding#))),((#iconHeight# + (#iconVerticalPadding#))) `" ")
         SendRainmeterCommand("!SetOption magickmeter1 Image3 `"Text " . string . " | Offset ((#iconWidth# + (#iconHorizontalPadding# * 2)) / 2),((#iconHeight# + (#iconVerticalPadding# * 2)) / 2)  | Color 255,255,255 | Face Segoe UI | Weight 700 | Align CenterCenter`" ")
     }
 
