@@ -23,6 +23,7 @@ iconTheme["h"] := IniRead(iniFile, "Variables", "iconHeight")
 iconTheme["paddingX"] := IniRead(iniFile, "Variables", "iconHorizontalPadding")
 iconTheme["paddingY"] := IniRead(iniFile, "Variables", "iconVerticalPadding")
 dockConfig["position"] := IniRead(iniFile, "Variables", "screenPosition")
+dockConfig["autohide"] := IniRead(iniFile, "Variables", "autohide")
 checkIniFile()
 
 iconTheme["wFull"] := (iconTheme["w"] + (iconTheme["paddingX"] * 2))

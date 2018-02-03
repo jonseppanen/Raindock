@@ -203,6 +203,12 @@ checkIniFile()
         iniCheck := false
     }
 
+    if(!dockConfig["autohide"])
+    {
+        IniWrite("smart",iniFile, "Variables", "autohide")
+        iniCheck := false
+    }
+
     if(iniCheck = false)
     {
         SendRainmeterCommand("!Refresh ")

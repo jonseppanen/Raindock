@@ -7,6 +7,7 @@ taskManage(wParam, lParam)
     Global dirCustomIcons
     Global dirThemeTemp
     Global iniFile
+    Global dockConfig
 
     if(wParam = "minimize")
     {
@@ -45,14 +46,14 @@ taskManage(wParam, lParam)
         {
             newCustomIconFile := dirCustomIcons . "\" . arrayTasks[selectedTask]["exe"] . ".png"
             FileCopy newIcon, newCustomIconFile
-            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . ".bmp" ,0)
-            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_pin.bmp" ,1)
+            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_" . dockConfig["position"] . ".bmp" ,0)
+            renderIconTheme(newCustomIconFile,dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_" . dockConfig["position"] . "_pin.bmp" ,1)
         }
     }
     else if(wParam = "reload icon")
     {   
-        fileIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . ".bmp"
-        filePinIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_pin.bmp"
+        fileIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_" . dockConfig["position"] . ".bmp"
+        filePinIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_" . dockConfig["position"] . "_pin.bmp"
         if(FileExist(fileIcon))
         {
             FileDelete fileIcon
@@ -65,8 +66,8 @@ taskManage(wParam, lParam)
     }
     else if(wParam = "restore original")
     {   
-        fileIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . ".bmp"
-        filePinIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_pin.bmp"
+        fileIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_" . dockConfig["position"] . ".bmp"
+        filePinIcon := dirThemeTemp . "\" . arrayTasks[selectedTask]["exe"] . "_" . dockConfig["position"] . "_pin.bmp"
         customFileIcon := dirCustomIcons . "\" . arrayTasks[selectedTask]["exe"] . ".png"
         if(FileExist(fileIcon))
         {
@@ -92,7 +93,7 @@ taskManage(wParam, lParam)
     }
     else if(wParam = "Resize Icon Horizontal Width")
     {
-        UserInput := InputBox("Please select a new Horizontal icon width", "Phone Number")
+        UserInput := InputBox("Please select a new Horizontal icon width (You may also want to redraw icons when done)", "Phone Number")
         if(UserInput)
         {
             IniWrite UserInput , iniFile, "Variables", "iconWidth"
@@ -101,7 +102,7 @@ taskManage(wParam, lParam)
     }
     else if(wParam = "Resize Icon Vertical Width")
     {
-        UserInput := InputBox("Please select a new Vertical icon width", "Phone Number")
+        UserInput := InputBox("Please select a new Vertical icon width (You may also want to redraw icons when done)", "Phone Number")
         if(UserInput)
         {
             IniWrite UserInput , iniFile, "Variables", "iconHeight"
@@ -127,6 +128,21 @@ taskManage(wParam, lParam)
     {
         IniWrite "bottom" , iniFile, "Variables", "screenPosition"
         SendRainmeterCommand("!Refresh ")
+    }
+    else if(wParam = "Never Autohide")
+    {
+        IniWrite "never" , iniFile, "Variables", "autohide"
+        dockConfig["autohide"] := "never"
+    }
+    else if(wParam = "Smart Autohide")
+    {
+        IniWrite "smart" , iniFile, "Variables", "autohide"
+        dockConfig["autohide"] := "smart"
+    }
+    else if(wParam = "Always Autohide")
+    {
+        IniWrite "always" , iniFile, "Variables", "autohide"
+        dockConfig["autohide"] := "always"
     }
 }
 
@@ -196,8 +212,13 @@ taskItemMenu(wParam, lParam)
     subMenuDock.Add "Redraw All Icons", "clearIconCache"
     subMenuDock.Add "Refresh Dock", "taskManage"
     subMenuDock.Add "Rainmeter Menu", "taskManage"
-
     menuTaskItem.Add "Raindock", subMenuDock
+
+    subMenuAutohide := MenuCreate()
+    subMenuAutohide.Add "Never Autohide", "taskManage"
+    subMenuAutohide.Add "Smart Autohide", "taskManage"
+    subMenuAutohide.Add "Always Autohide", "taskManage"
+    subMenuDock.Add "AutoHide...", subMenuAutohide
 
     menuTaskItem.Show
 }
