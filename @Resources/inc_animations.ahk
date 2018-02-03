@@ -3,7 +3,7 @@ dockHide()
 {
     Global dockConfig
 
-    if(dockConfig["visible"] = false || dockConfig["minMax"] = 0)
+    if(dockConfig["visible"] = false)
     {
         return
     }
@@ -63,6 +63,8 @@ MoveDock(moveX, moveY)
     dockConfig["animating"] = false 
 }
 
+dockConfig["minMax"] := 99
+
 dockStateHandler()
 {
     Global dockConfig
@@ -85,16 +87,17 @@ dockStateHandler()
     
     if(oldDockMinMax != dockConfig["minMax"])
     {
-        if(dockConfig["minMax"] < 1){
-            dockShow()
-            return
-        }
-        else{
+        if((dockConfig["autohide"] != "never" && dockConfig["minMax"] = 1) || dockConfig["minMax"] = 2)
+        {
             dockHide()
+        }
+        else
+        {
+            dockShow()
         }
     }
 
-    if(dockConfig["minMax"] = 1)
+    if((dockConfig["autohide"] = "always" || (dockConfig["autohide"] = "smart" && dockConfig["minMax"] = 1)))
     {
         if((dockConfig["position"] = "bottom" && ypos >= (A_ScreenHeight - 2)) || (dockConfig["position"] = "right" && xpos >= (A_ScreenWidth - 2)) || (dockConfig["position"] = "left" && xpos <= 2) || (dockConfig["position"] = "top" && ypos <= 2) )
         {
