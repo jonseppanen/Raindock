@@ -72,11 +72,11 @@ dockStateHandler()
     MouseGetPos xpos, ypos 
     WinGetPos(,,CurrentWinWidth, CurrentWinHeight,"A")
 
-    if(CurrentWinWidth = A_ScreenWidth && CurrentWinHeight = A_ScreenHeight)
+    if(CurrentWinWidth = A_ScreenWidth && CurrentWinHeight = A_ScreenHeight && WinGetClass("A") != "WorkerW")
     {
         dockConfig["minMax"] := 2
     }
-    else if(WinGetMinMax("A"))
+    else if(WinGetMinMax("A") && WinGetClass("A") != "WorkerW")
     {
         dockConfig["minMax"] := 1
     }
